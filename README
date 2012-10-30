@@ -1,0 +1,22 @@
+
+###############################################################################
+# SimpleGUI/Tkinter Converter (STconverter.py) is a little software aiming to 
+# convert simple Python scripts written for SimpleGUI to work with Tkinter GUI 
+# module instead, and vice versa.
+# 
+# "Tkinter is Python's de-facto standard GUI (Graphical User Interface) package"
+# (http://wiki.python.org/moin/TkInter)
+# "SimpleGUI is a custom Python graphical user interface (GUI) module implemented 
+# directly in CodeSkulptor that provides an easy to learn interface for building 
+# interactive programs in Python" (http://www.codeskulptor.org) used for the 
+# online Coursera course "An Introduction to Interactive Programming in Python" 
+# by Joe Warren, Scott Rixner, John Greiner, and Stephen Wong (Rice University) 
+# 
+# For latest version of SimpleGUI/Tkinter Converter or detailed changelog, visit 
+# the repository on Github: 
+# https://github.com/jem-gh/STconverter
+# 
+# SimpleGUI/Tkinter Converter is developed by Jean-Etienne Morlighem
+###############################################################################
+
+
