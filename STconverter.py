@@ -28,6 +28,7 @@ import re
 
 # global variables
 input_data = ""
+input_name = ""
 output_data = ""
 
 
@@ -181,7 +182,7 @@ class Window_App:
             contents of "entry_open" and "entry_save" to reflect selected file and 
             proposed an optional name for the output file """
         
-        global input_data
+        global input_data, input_name
         
         input_loaded = tkFileDialog.askopenfile(title="Choose a file to convert")
         
@@ -189,6 +190,7 @@ class Window_App:
             # retrieve file data, path, and name
             input_data = input_loaded.read()
             input_path = input_loaded.name
+            input_name = self.extract_input_name(input_path)
             input_loaded.close()
             
             # add path of the selected file to "entry_open"
@@ -208,7 +210,12 @@ class Window_App:
         if dir_save:
             # add the path and optional name of the output file to "entry_save"
             self.entry_save.delete(0, Tkinter.END)
-            self.entry_save.insert(0, (dir_save))
+            self.entry_save.insert(0, (dir_save+"/"+input_name+"(converted).py"))
+    
+    
+    def extract_input_name(self, input_path):
+        """ extract the name of a file from the entire file path """
+        return re.findall(r'([\w ()-]+)(?:\.py)?$', input_path)[0]
     
     
     def convert_st(self):
