@@ -47,8 +47,8 @@ class Simplegui2Tkinter:
         # update SimpleGUI parts to Tkinter
         else:
             # update the GUI module
-            MODULE_RE = re.compile(r'^import simplegui', re.MULTILINE)
-            output_data = MODULE_RE.sub(r'import Tkinter', input_data)
+            MODULE_RE = re.compile(r'^(import [\w ,]*)simplegui', re.MULTILINE)
+            output_data = MODULE_RE.sub(r'\1Tkinter', input_data)
             
             
             # update the frame
