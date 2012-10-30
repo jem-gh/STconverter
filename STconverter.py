@@ -178,7 +178,8 @@ class Window_App:
     
     def file_open(self):
         """ open a file dialog to select the file to convert, update automatically 
-            contents of "entry_open" """
+            contents of "entry_open" and "entry_save" to reflect selected file and 
+            proposed an optional name for the output file """
         
         global input_data
         
@@ -193,6 +194,10 @@ class Window_App:
             # add path of the selected file to "entry_open"
             self.entry_open.delete(0, Tkinter.END)
             self.entry_open.insert(0, input_path)
+            
+            # add path and optional name of the output file to "entry_save"
+            self.entry_save.delete(0, Tkinter.END)
+            self.entry_save.insert(0, (input_path[:-3]+"(converted).py"))
     
     
     def directory_open(self):
@@ -228,6 +233,10 @@ class Window_App:
                 test_file = open(self.entry_save.get(), "w")
                 test_file.write(output_data)
                 test_file.close()
+                
+                # clear "entry_open" and "entry_save" and signaled user the work is done
+                self.entry_open.delete(0, Tkinter.END)
+                self.entry_save.delete(0, Tkinter.END)
                 
                 finished_text = "conversion from SimpleGUI to Tkinter: Finished!"
                 tkMessageBox.showinfo("Done!", message=finished_text)
