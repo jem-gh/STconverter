@@ -124,6 +124,10 @@ class Window_App:
         # create the frame
         frame = Tkinter.Frame(master)
         frame.grid()
+        frame.rowconfigure(0, minsize=40)
+        frame.rowconfigure(3, minsize=40)
+        frame.rowconfigure(5, minsize=60)
+        frame.rowconfigure(7, minsize=60)
         
         title_text = "SimpleGUI/Tkinter converter"
         label_title = Tkinter.Label(frame, text=title_text)
@@ -132,44 +136,44 @@ class Window_App:
         
         # input: select file to convert
         label_open = Tkinter.Label(frame, text="File to convert:")
-        label_open.grid(row=1, column=0)
+        label_open.grid(row=1, column=0, sticky="W", padx=10)
         
-        self.entry_open = Tkinter.Entry(frame)
-        self.entry_open.grid(row=2, column=0)
+        self.entry_open = Tkinter.Entry(frame, width=40)
+        self.entry_open.grid(row=2, column=0, sticky="W", padx=10)
         
         self.button_open = Tkinter.Button(frame, text="Select file", 
-                                          command=self.file_open)
-        self.button_open.grid(row=2, column=1)
+                                          command=self.file_open, width=11)
+        self.button_open.grid(row=2, column=1, sticky="W", padx=10)
         
         
         # output: select name and directory for saving conversion
         label_save = Tkinter.Label(frame, text="Save as:")
-        label_save.grid(row=3, column=0)
+        label_save.grid(row=3, column=0, sticky="W"+"S", padx=10)
         
-        self.entry_save = Tkinter.Entry(frame)
-        self.entry_save.grid(row=4, column=0)
+        self.entry_save = Tkinter.Entry(frame, width=40)
+        self.entry_save.grid(row=4, column=0, sticky="W", padx=10)
         
         self.button_save = Tkinter.Button(frame, text="Select directory", 
-                                          command=self.directory_open)
-        self.button_save.grid(row=4, column=1)
+                                          command=self.directory_open, width=11)
+        self.button_save.grid(row=4, column=1, sticky="W", padx=10)
         
         
         # convert buttons
         st_text = "SimpleGUI > Tkinter Convert!"
-        self.button_convert_st = Tkinter.Button(frame, text=st_text, 
+        self.button_convert_st = Tkinter.Button(frame, text=st_text, width=40, 
                                                 command=self.convert_st)
-        self.button_convert_st.grid(row=5, columnspan=2)
+        self.button_convert_st.grid(row=5, columnspan=2, sticky="S")
         
         ts_text = 'Tkinter > SimpleGUI ... coming "soon"!'
-        self.button_convert_ts = Tkinter.Button(frame, text=ts_text, 
-                                                command=None)
-        self.button_convert_ts.grid(row=6, columnspan=2)
+        self.button_convert_ts = Tkinter.Button(frame, text=ts_text, width=40, 
+                                                command=None, bg="grey")
+        self.button_convert_ts.grid(row=6, columnspan=2, sticky="S")
         
         
         # close button
         self.button_close = Tkinter.Button(frame, text="Quit", 
                                            command=frame.quit)
-        self.button_close.grid(row=7, column=1)
+        self.button_close.grid(row=7, column=1, sticky="S", pady=5, padx=10)
     
     
     def file_open(self):
