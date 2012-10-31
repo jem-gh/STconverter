@@ -42,74 +42,75 @@ class Simplegui2Tkinter:
         # check if at least the input file use the simplegui module
         if not "simplegui" in input_data:
             output_data = "___NoSimpleguiFound!___"
+            return
         
         
         # update SimpleGUI parts to Tkinter
-        else:
-            # update the GUI module
-            MODULE_RE = re.compile(r'^(import [\w ,]*)simplegui', re.MULTILINE)
-            output_data = MODULE_RE.sub(r'\1Tkinter', input_data)
-            
-            
-            # update the frame
-            FRAME_RE = re.compile(r'^(\w+) ?= ?simplegui.create_frame\((\".+\"), ?\d+, ?\d+(?:, ?\d+)?\)', 
+        
+        # update the GUI module
+        MODULE_RE = re.compile(r'^(import [\w ,]*)simplegui', re.MULTILINE)
+        output_data = MODULE_RE.sub(r'\1Tkinter', input_data)
+        
+        
+        # update the frame
+        FRAME_RE = re.compile(r'^(\w+) ?= ?simplegui.create_frame\((\".+\"), ?\d+, ?\d+(?:, ?\d+)?\)', 
+                              re.MULTILINE)
+        output_data = FRAME_RE.sub(r'%s%s\2%s\1%s\1%s' % 
+                                    ("window_root = Tkinter.Tk()\n", 
+                                     "window_root.title(", ")\n", 
+                                     " = Tkinter.Frame(window_root)\n", 
+                                     ".grid()\n"), 
+                                   output_data)
+        
+        
+        # update button
+        BUTTON_RE = re.compile(r'^(\w+).add_button\((.+), ?(\w+), ?\d+\)', 
+                               re.MULTILINE)
+        output_data = BUTTON_RE.sub(r"\3%s\1%s\2%s\3%s\3%s" % 
+                                     ("_bt = Tkinter.Button(", ", text=", ", command=", ")\n",
+                                      "_bt.grid()"),
+                                    output_data)
+        
+        
+        # update label
+        #### To do
+        #### Tkinter.Label(window_root, text="")
+        
+        
+        # update input
+        ## retrieve input and associated function name 
+        input_fn_name = re.findall(r'^\w+.add_input\(.+, ?(\w+), ?\d+\)', 
+                                   output_data, re.MULTILINE)[0]
+        ## retrieve parameter name used in the function
+        param_name = re.findall(r'^def %s\((\w+)\):' % input_fn_name, 
+                                output_data, re.MULTILINE)[0]
+        ## find param in function and change it
+        PARAM_POS_RE = re.compile(r'^def %s\(%s\):(?:\n.*)+[=( \-+*/]%s[) \-+*/]' % 
+                                   (input_fn_name, param_name, param_name), 
                                   re.MULTILINE)
-            output_data = FRAME_RE.sub(r'%s%s\2%s\1%s\1%s' % 
-                                        ("window_root = Tkinter.Tk()\n", 
-                                         "window_root.title(", ")\n", 
-                                         " = Tkinter.Frame(window_root)\n", 
-                                         ".grid()\n"), 
-                                       output_data)
-            
-            
-            # update button
-            BUTTON_RE = re.compile(r'^(\w+).add_button\((.+), ?(\w+), ?\d+\)', 
-                                   re.MULTILINE)
-            output_data = BUTTON_RE.sub(r"\3%s\1%s\2%s\3%s\3%s" % 
-                                         ("_bt = Tkinter.Button(", ", text=", ", command=", ")\n",
-                                          "_bt.grid()"),
-                                        output_data)
-            
-            
-            # update label
-            #### To do
-            #### Tkinter.Label(window_root, text="")
-            
-            
-            # update input
-            ## retrieve input and associated function name 
-            input_fn_name = re.findall(r'^\w+.add_input\(.+, ?(\w+), ?\d+\)', 
-                                       output_data, re.MULTILINE)[0]
-            ## retrieve parameter name used in the function
-            param_name = re.findall(r'^def %s\((\w+)\):' % input_fn_name, 
-                                    output_data, re.MULTILINE)[0]
-            ## find param in function and change it
-            PARAM_POS_RE = re.compile(r'^def %s\(%s\):(?:\n.*)+[=( \-+*/]%s[) \-+*/]' % 
-                                       (input_fn_name, param_name, param_name), 
-                                      re.MULTILINE)
-            
-            cm = re.findall(PARAM_POS_RE, output_data)[0]
-            cp = re.sub(r'(?<=(?<!%s)[= \(\-+*/])%s(?=[ \)\-+*/\n])' % 
-                         (input_fn_name, param_name), 
-                        "%s_et.get()" % input_fn_name, cm)
-            
-            output_data = output_data.replace(cm, cp)
-            
-            ## write GUI
-            INPUT_RE = re.compile(r'^(\w+).add_input\((.+), ?(\w+), ?(\d+)\)', 
-                                  re.MULTILINE)
-            output_data = INPUT_RE.sub(r"\3%s\1%s\2%s\3%s\3%s\1%s\3%s\3%s\3%s" % 
-                                        ("_lb = Tkinter.Label(", ", text=", ")\n", 
-                                         "_lb.grid()\n", 
-                                         "_et = Tkinter.Entry(", ")\n", 
-                                         "_et.bind('<Return>', ", ")\n", 
-                                         "_et.grid()\n"),
-                                        output_data)
-            
-            
-            # start the frame
-            START_RE = re.compile(r'^\w+.start\(\)', re.MULTILINE)
-            output_data = START_RE.sub("window_root.mainloop()\n", output_data)
+        
+        cm = re.findall(PARAM_POS_RE, output_data)[0]
+        cp = re.sub(r'(?<=(?<!%s)[= \(\-+*/])%s(?=[ \)\-+*/\n])' % 
+                     (input_fn_name, param_name), 
+                    "%s_et.get()" % input_fn_name, cm)
+        
+        output_data = output_data.replace(cm, cp)
+        
+        ## write GUI
+        INPUT_RE = re.compile(r'^(\w+).add_input\((.+), ?(\w+), ?(\d+)\)', 
+                              re.MULTILINE)
+        output_data = INPUT_RE.sub(r"\3%s\1%s\2%s\3%s\3%s\1%s\3%s\3%s\3%s" % 
+                                    ("_lb = Tkinter.Label(", ", text=", ")\n", 
+                                     "_lb.grid()\n", 
+                                     "_et = Tkinter.Entry(", ")\n", 
+                                     "_et.bind('<Return>', ", ")\n", 
+                                     "_et.grid()\n"),
+                                    output_data)
+        
+        
+        # start the frame
+        START_RE = re.compile(r'^\w+.start\(\)', re.MULTILINE)
+        output_data = START_RE.sub("window_root.mainloop()\n", output_data)
 
 
 
@@ -227,28 +228,28 @@ class Window_App:
         if not input_data:
             nofile_text = "Please, select first a file to convert with data in it."
             tkMessageBox.showinfo("No file selected!", message=nofile_text)
+            return
         
-        else:
-            # conversion of the input file by calling the Simplegui2Tkinter class
-            Simplegui2Tkinter(input_data)
-            
-            # return an error message if the input file has no SimpleGUI module
-            if "___NoSimpleguiFound!___" in output_data:
-                error_text = "Wrong file? No SimpleGUI module was found in this file..."
-                tkMessageBox.showinfo("Done!", message=error_text)
-            
-            else:
-                # save the output file
-                test_file = open(self.entry_save.get(), "w")
-                test_file.write(output_data)
-                test_file.close()
-                
-                # clear "entry_open" and "entry_save" and signaled user the work is done
-                self.entry_open.delete(0, Tkinter.END)
-                self.entry_save.delete(0, Tkinter.END)
-                
-                finished_text = "conversion from SimpleGUI to Tkinter: Finished!"
-                tkMessageBox.showinfo("Done!", message=finished_text)
+        # conversion of the input file by calling the Simplegui2Tkinter class
+        Simplegui2Tkinter(input_data)
+        
+        # return an error message if the input file has no SimpleGUI module
+        if "___NoSimpleguiFound!___" in output_data:
+            error_text = "Wrong file? No SimpleGUI module was found in this file..."
+            tkMessageBox.showinfo("Done!", message=error_text)
+            return
+        
+        # save the output file
+        test_file = open(self.entry_save.get(), "w")
+        test_file.write(output_data)
+        test_file.close()
+        
+        # clear "entry_open" and "entry_save" and signaled user the work is done
+        self.entry_open.delete(0, Tkinter.END)
+        self.entry_save.delete(0, Tkinter.END)
+        
+        finished_text = "conversion from SimpleGUI to Tkinter: Finished!"
+        tkMessageBox.showinfo("Done!", message=finished_text)
 
 
 
