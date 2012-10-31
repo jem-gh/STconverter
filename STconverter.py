@@ -78,34 +78,35 @@ class Simplegui2Tkinter:
         
         
         # update input
-        ## retrieve input and associated function name 
-        input_fn_name = re.findall(r'^\w+.add_input\(.+, ?(\w+), ?\d+\)', 
-                                   output_data, re.MULTILINE)[0]
-        ## retrieve parameter name used in the function
-        param_name = re.findall(r'^def %s\((\w+)\):' % input_fn_name, 
-                                output_data, re.MULTILINE)[0]
-        ## find param in function and change it
-        PARAM_POS_RE = re.compile(r'^def %s\(%s\):(?:\n.*)+[=( \-+*/]%s[) \-+*/]' % 
-                                   (input_fn_name, param_name, param_name), 
+        if "add_input" in output_data:
+            ## retrieve input and associated function name 
+            input_fn_name = re.findall(r'^\w+.add_input\(.+, ?(\w+), ?\d+\)', 
+                                       output_data, re.MULTILINE)[0]
+            ## retrieve parameter name used in the function
+            param_name = re.findall(r'^def %s\((\w+)\):' % input_fn_name, 
+                                    output_data, re.MULTILINE)[0]
+            ## find param in function and change it
+            PARAM_POS_RE = re.compile(r'^def %s\(%s\):(?:\n.*)+[=( \-+*/]%s[) \-+*/]' % 
+                                       (input_fn_name, param_name, param_name), 
+                                      re.MULTILINE)
+            
+            cm = re.findall(PARAM_POS_RE, output_data)[0]
+            cp = re.sub(r'(?<=(?<!%s)[= \(\-+*/])%s(?=[ \)\-+*/\n])' % 
+                         (input_fn_name, param_name), 
+                        "%s_et.get()" % input_fn_name, cm)
+            
+            output_data = output_data.replace(cm, cp)
+            
+            ## write GUI
+            INPUT_RE = re.compile(r'^(\w+).add_input\((.+), ?(\w+), ?(\d+)\)', 
                                   re.MULTILINE)
-        
-        cm = re.findall(PARAM_POS_RE, output_data)[0]
-        cp = re.sub(r'(?<=(?<!%s)[= \(\-+*/])%s(?=[ \)\-+*/\n])' % 
-                     (input_fn_name, param_name), 
-                    "%s_et.get()" % input_fn_name, cm)
-        
-        output_data = output_data.replace(cm, cp)
-        
-        ## write GUI
-        INPUT_RE = re.compile(r'^(\w+).add_input\((.+), ?(\w+), ?(\d+)\)', 
-                              re.MULTILINE)
-        output_data = INPUT_RE.sub(r"\3%s\1%s\2%s\3%s\3%s\1%s\3%s\3%s\3%s" % 
-                                    ("_lb = Tkinter.Label(", ", text=", ")\n", 
-                                     "_lb.grid()\n", 
-                                     "_et = Tkinter.Entry(", ")\n", 
-                                     "_et.bind('<Return>', ", ")\n", 
-                                     "_et.grid()\n"),
-                                    output_data)
+            output_data = INPUT_RE.sub(r"\3%s\1%s\2%s\3%s\3%s\1%s\3%s\3%s\3%s" % 
+                                        ("_lb = Tkinter.Label(", ", text=", ")\n", 
+                                         "_lb.grid()\n", 
+                                         "_et = Tkinter.Entry(", ")\n", 
+                                         "_et.bind('<Return>', ", ")\n", 
+                                         "_et.grid()\n"),
+                                        output_data)
         
         
         # start the frame
