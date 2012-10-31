@@ -20,3 +20,23 @@
 ###############################################################################
 
 
+
+1. NO INSTALLATION REQUIRED
+Just download the STconverter.py file, and it's ready to use.
+
+
+
+2. HOW TO USE
+On linux, you can start the program by clicking on the STconverter.py file or 
+by typing in terminal:
+
+	./Path_To_The_Directory_Where_It_Is_Located/STconverter.py
+
+The GUI will then start. 
+
+
+
+3. OTHER NOTES
+Will require Python (and the module Tkinter) installed on the machine.
+
+So far, tested on Linux with Python 2.7.3
