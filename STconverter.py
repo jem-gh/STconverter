@@ -35,85 +35,91 @@ output_data = ""
 
 class Simplegui2Tkinter:
     def __init__(self, input_data):
-        """ """
+        """ update SimpleGUI parts to Tkinter """
         
         global output_data
         
-        # check if at least the input file use the simplegui module
+        # stop conversion if the input file do not use the simplegui module
         if not "simplegui" in input_data:
             output_data = "___NoSimpleguiFound!___"
             return
         
         
-        # update SimpleGUI parts to Tkinter
-        
-        # update the GUI module
+        # update simplegui module to Tkinter
         MODULE_RE = re.compile(r'^(import [\w ,]*)simplegui', re.MULTILINE)
         output_data = MODULE_RE.sub(r'\1Tkinter', input_data)
         
         
-        # update the frame
-        FRAME_RE = re.compile(r'^(\w+) ?= ?simplegui.create_frame\((\".+\"), ?\d+, ?\d+(?:, ?\d+)?\)', 
-                              re.MULTILINE)
-        output_data = FRAME_RE.sub(r'%s%s\2%s\1%s\1%s' % 
-                                    ("window_root = Tkinter.Tk()\n", 
-                                     "window_root.title(", ")\n", 
-                                     " = Tkinter.Frame(window_root)\n", 
-                                     ".grid()\n"), 
-                                   output_data)
+        # update the Frame
+        frame_widget = {
+        "sg_frame": "^(\w+) ?= ?simplegui.create_frame" + \
+                    "\((\".+\"), ?\d+, ?\d+(?:, ?\d+)?\)", 
+        "tk_frame": "window_root = Tkinter.Tk()\n" + \
+                    "window_root.title(\\2)\n" + \
+                    "\\1 = Tkinter.Frame(window_root)\n" + \
+                    "\\1.grid()\n"}
+        FRAME_RE = re.compile(r'%s' % frame_widget["sg_frame"], re.MULTILINE)
+        output_data = FRAME_RE.sub(r'%s' % frame_widget["tk_frame"], output_data)
         
         
-        # update button
-        BUTTON_RE = re.compile(r'^(\w+).add_button\((.+), ?(\w+), ?\d+\)', 
-                               re.MULTILINE)
-        output_data = BUTTON_RE.sub(r"\3%s\1%s\2%s\3%s\3%s" % 
-                                     ("_bt = Tkinter.Button(", ", text=", ", command=", ")\n",
-                                      "_bt.grid()"),
+        # update Button widget(s)
+        button_widget = {
+        "sg_button": "^(\w+).add_button\((.+), ?(\w+), ?\d+\)", 
+        "tk_button": "\\3_bt = Tkinter.Button(\\1, text=\\2, command=\\3)\n" + \
+                     "\\3_bt.grid()"}
+        BUTTON_RE = re.compile(r"%s" % button_widget["sg_button"], re.MULTILINE)
+        output_data = BUTTON_RE.sub(r"%s" % button_widget["tk_button"],
                                     output_data)
         
         
-        # update label
+        # update Label widget(s)
         #### To do
         #### Tkinter.Label(window_root, text="")
         
         
         # update Entry/Input widget(s)
         if "add_input" in output_data:
-            # retrieve all input widgets and associated function names
-            input_fn_names = re.findall(r'^\w+.add_input\(.+, ?(\w+), ?\d+\)', 
-                                        output_data, re.MULTILINE)
             
-            for input_fn_name in input_fn_names:
+            input_widget = {
+            "input_name":    "^\w+.add_input\(.+, ?(\w+), ?\d+\)", 
+            "param_name":    "^def %s\((\w+)\):", 
+            "handler":       "^def %s\(%s\):(?:\n .*)+[=( \-+*/]%s[) \-+*/]", 
+            "handler_param": "(?<=(?<!%s)[= \(\-+*/])%s(?=[ \)\-+*/\n])", 
+            "sg_input":      "^(\w+).add_input\((.+), ?(\w+), ?(\d+)\)", 
+            "tk_input":      "\\3_lb = Tkinter.Label(\\1, text=\\2)\n" + \
+                             "\\3_lb.grid()\n" + \
+                             "\\3_et = Tkinter.Entry(\\1)\n" + \
+                             "\\3_et.bind('<Return>', \\3)\n" + \
+                             "\\3_et.grid()\n"}
+            
+            # retrieve all Input widgets and respective handler names
+            input_names = re.findall(r'%s' % input_widget["input_name"], 
+                                     output_data, re.MULTILINE)
+            
+            for input_name in input_names:
                 # retrieve parameter name used in the Input handler
-                param_name = re.findall(r'^def %s\((\w+)\):' % input_fn_name, 
+                param_name = re.findall(input_widget["param_name"] % input_name, 
                                         output_data, re.MULTILINE)[0]
                 
-                # find and update parameter in the handler
-                PARAM_POS_RE = re.compile(r'^def %s\(%s\):(?:\n .*)+[=( \-+*/]%s[) \-+*/]' % 
-                                           (input_fn_name, param_name, param_name), 
-                                          re.MULTILINE)
+                # find and update parameter in the Input handler
+                HANDLER_RE = re.compile(input_widget["handler"] % (input_name, 
+                                        param_name, param_name), re.MULTILINE)
                 
-                handler_old = re.findall(PARAM_POS_RE, output_data)[0]
+                handler_old = re.findall(HANDLER_RE, output_data)[0]
                 
-                handler_new = re.sub(r'(?<=(?<!%s)[= \(\-+*/])%s(?=[ \)\-+*/\n])' % 
-                                      (input_fn_name, param_name), 
-                                     "%s_et.get()" % input_fn_name, handler_old)
+                handler_new = re.sub(input_widget["handler_param"] % 
+                                     (input_name, param_name), 
+                                     "%s_et.get()" % input_name, handler_old)
                 
                 output_data = output_data.replace(handler_old, handler_new)
                 
                 ## write Tkinter GUI of the Input widget
-                INPUT_RE = re.compile(r'^(\w+).add_input\((.+), ?(\w+), ?(\d+)\)', 
-                                      re.MULTILINE)
-                output_data = INPUT_RE.sub(r"\3%s\1%s\2%s\3%s\3%s\1%s\3%s\3%s\3%s" % 
-                                            ("_lb = Tkinter.Label(", ", text=", ")\n", 
-                                             "_lb.grid()\n", 
-                                             "_et = Tkinter.Entry(", ")\n", 
-                                             "_et.bind('<Return>', ", ")\n", 
-                                             "_et.grid()\n"),
-                                            output_data)
+                INPUT_RE = re.compile(r'%s' % input_widget["sg_input"], re.MULTILINE)
+                output_data = INPUT_RE.sub(r"%s" % input_widget["tk_input"], 
+                                           output_data)
         
         
-        # start the frame
+        # update the initialization of the event loop
         START_RE = re.compile(r'^\w+.start\(\)', re.MULTILINE)
         output_data = START_RE.sub("window_root.mainloop()\n", output_data)
 
@@ -130,7 +136,7 @@ class Window_App:
     def __init__(self, master):
         """ core of the GUI """
         
-        # create the frame
+        # Frame
         frame = Tkinter.Frame(master)
         frame.grid()
         frame.rowconfigure(0, minsize=40)
@@ -167,7 +173,7 @@ class Window_App:
         self.button_save.grid(row=4, column=1, sticky="W", padx=10)
         
         
-        # convert buttons
+        # buttons to initiate conversion
         st_text = "SimpleGUI > Tkinter Convert!"
         self.button_convert_st = Tkinter.Button(frame, text=st_text, width=40, 
                                                 command=self.convert_st)
@@ -179,7 +185,7 @@ class Window_App:
         self.button_convert_ts.grid(row=6, columnspan=2, sticky="S")
         
         
-        # close button
+        # quit button
         self.button_close = Tkinter.Button(frame, text="Quit", 
                                            command=frame.quit)
         self.button_close.grid(row=7, column=1, sticky="S", pady=5, padx=10)
@@ -229,7 +235,7 @@ class Window_App:
     def convert_st(self):
         """ handle the conversion from SimpleGUI to Tkinter, and save the result """
         
-        # check first if a file was selected and it contains any data
+        # check first if a file was selected and that it contains any data
         if not input_data:
             nofile_text = "Please, select first a file to convert with data in it."
             tkMessageBox.showinfo("No file selected!", message=nofile_text)
@@ -253,7 +259,7 @@ class Window_App:
         self.entry_open.delete(0, Tkinter.END)
         self.entry_save.delete(0, Tkinter.END)
         
-        finished_text = "conversion from SimpleGUI to Tkinter: Finished!"
+        finished_text = "SUCCESS! Conversion from SimpleGUI to Tkinter finished!"
         tkMessageBox.showinfo("Done!", message=finished_text)
 
 
