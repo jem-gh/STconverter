@@ -98,8 +98,10 @@ class Simplegui2Tkinter:
             ## write GUI
             INPUT_RE = re.compile(r'^(\w+).add_input\((.+), ?(\w+), ?(\d+)\)', 
                                   re.MULTILINE)
-            output_data = INPUT_RE.sub(r"\3%s\1%s\3%s\3%s\3%s" % 
-                                        ("_et = Tkinter.Entry(", ")\n", 
+            output_data = INPUT_RE.sub(r"\3%s\1%s\2%s\3%s\3%s\1%s\3%s\3%s\3%s" % 
+                                        ("_lb = Tkinter.Label(", ", text=", ")\n", 
+                                         "_lb.grid()\n", 
+                                         "_et = Tkinter.Entry(", ")\n", 
                                          "_et.bind('<Return>', ", ")\n", 
                                          "_et.grid()\n"),
                                         output_data)
@@ -258,4 +260,3 @@ app = Window_App(window_root)
 
 # initiate the application window
 window_root.mainloop()
-
