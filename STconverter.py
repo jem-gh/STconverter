@@ -74,7 +74,7 @@ class Simplegui2Tkinter:
         canvas_widget = {
         "tk_canvas": "w_canvas = Tkinter.Canvas(\\1, width=\\3, height=\\4)\n" + \
                      "w_canvas.grid()\n", 
-        "sg_txt": "canvas.draw_text\(([\w \(\)]+), " + \
+        "sg_txt": "\w+.draw_text\((.+), ?" + \
                   "[\[\(](\d+), (\d+)[\]\)], (\d+), (\"\w+\")\)", 
         "tk_txt": "w_canvas.create_text((\\2, \\3), anchor='sw', " + \
                   "text=\\1, font=('DejaVu Serif Condensed', \\4), fill=\\5)"}
@@ -124,9 +124,18 @@ class Simplegui2Tkinter:
                              draw_handler+"()", output_data)
         
         # update Canvas methods
+        # Text
         TXT_RE = re.compile(r'%s' % canvas_widget["sg_txt"], re.MULTILINE)
-        output_data = TXT_RE.sub(r'%s' % canvas_widget["tk_txt"], 
-                                 output_data)
+        output_data = TXT_RE.sub(r'%s' % canvas_widget["tk_txt"], output_data)
+        
+        # Oval
+        if ".draw_circle" in output_data:
+            x, y, r, w = re.findall(r".draw_circle\([\[\(](\d+), (\d+)[\]\)], " + \
+                                     "(\d+), (\d+)", output_data)[0]
+            x, y = (int(x) - int(r) / 2), (int(y) + int(r) / 2)
+            output_data = re.sub(r'\w+.draw_circle.*(\"\w+\").+\n', 
+                                 r'w_canvas.create_oval((%d,%d,%d,%d), width=%s, outline=\1, fill="")\n' % 
+                                 (x, x, y, y, w), output_data)
     
     
     def up_button(self):
