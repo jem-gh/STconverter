@@ -50,16 +50,70 @@ class Simplegui2Tkinter:
         output_data = MODULE_RE.sub(r'\1Tkinter', input_data)
         
         
-        # update the Frame
+        # update the Frame and Canvas widget
         frame_widget = {
-        "sg_frame": "^(\w+) ?= ?simplegui.create_frame" + \
-                    "\((\".+\"), ?\d+, ?\d+(?:, ?\d+)?\)", 
-        "tk_frame": "window_root = Tkinter.Tk()\n" + \
-                    "window_root.title(\\2)\n" + \
-                    "\\1 = Tkinter.Frame(window_root)\n" + \
-                    "\\1.grid()\n"}
+        "sg_frame":  "^(\w+) ?= ?simplegui.create_frame" + \
+                     "\((\".+\"), ?(\d+), ?(\d+)(?:, ?\d+)?\)", 
+        "tk_frame":  "window_root = Tkinter.Tk()\n" + \
+                     "window_root.title(\\2)\n" + \
+                     "\\1 = Tkinter.Frame(window_root)\n" + \
+                     "\\1.grid()\n"}
+        canvas_widget = {
+        "tk_canvas": "w_canvas = Tkinter.Canvas(\\1, width=\\3, height=\\4)\n" + \
+                     "w_canvas.grid()\n", 
+        "sg_txt": "canvas.draw_text\(([\w \(\)]+), " + \
+                  "[\[\(](\d+), (\d+)[\]\)], (\d+), (\"\w+\")\)", 
+        "tk_txt": "w_canvas.create_text((\\2, \\3), anchor='sw', " + \
+                  "text=\\1, font=('Helvetica', \\4), fill=\\5)"}
+        
         FRAME_RE = re.compile(r'%s' % frame_widget["sg_frame"], re.MULTILINE)
-        output_data = FRAME_RE.sub(r'%s' % frame_widget["tk_frame"], output_data)
+        
+        # if no need for Canvas widget, update only the Frame
+        if "set_draw_handler" not in output_data:
+            output_data = FRAME_RE.sub(r'%s' % frame_widget["tk_frame"], output_data)
+        
+        # update the Frame and Canvas widget
+        if "set_draw_handler" in output_data:
+            # find name of drawing handler
+            draw_handler = re.findall(r'^\w+.set_draw_handler\((.+)\)', output_data, 
+                                      re.MULTILINE)[0]
+            
+            # find all global variables used in code
+            global_var_str = ''.join(re.findall(r'^\s+global([ \w+,]+)', output_data, 
+                                                re.MULTILINE))
+            global_var_list = re.findall(r'(\w+)+', global_var_str)
+            
+            # select only global variables used in drawing handler
+            global_var_drw = []
+            for var in global_var_list:
+                global_var_drw += re.findall(
+                      r'^def %s\(\w+\):(?:\n .*)+[=( \-+*/](%s)[) \-+*/]*' % 
+                       (draw_handler, var), output_data, re.MULTILINE)
+            
+            # update functions containing global variables used by drawing handler
+            for var in global_var_drw:
+                fn_old = re.findall(r'(^\s+global .*%s(?:.*\n)+?)\n\S' % var, 
+                                    output_data, re.MULTILINE)[0]
+                space = re.findall(r'(    +?)global', fn_old)[0]
+                fn_new = fn_old[:-1] + space + draw_handler + "()\n\n"
+                output_data = re.sub(re.escape(fn_old), fn_new, output_data)
+            
+            # update drawing handler
+            DH_RE = re.compile(r'^def (%s)\(\w+\):\n(\s+)' % draw_handler, re.MULTILINE)
+            output_data = DH_RE.sub(r'def \1():\n\2w_canvas.delete("all")\n\2', output_data)
+            
+            # create canvas with size used in "simplegui.create_frame"
+            output_data = FRAME_RE.sub(r'%s%s' % (frame_widget["tk_frame"], 
+                                       canvas_widget["tk_canvas"]), output_data)
+            
+            # delete "set_draw_handler" and replace with drawing handler call
+            output_data = re.sub(r'\w+.set_draw_handler\(%s\)' % draw_handler, 
+                                 draw_handler+"()", output_data)
+            
+            # update Canvas methods
+            TXT_RE = re.compile(r'%s' % canvas_widget["sg_txt"], re.MULTILINE)
+            output_data = TXT_RE.sub(r'%s' % canvas_widget["tk_txt"], 
+                                     output_data)
         
         
         # update Button widget(s)
