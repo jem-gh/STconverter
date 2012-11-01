@@ -44,13 +44,26 @@ class Simplegui2Tkinter:
             output_data = "___NoSimpleguiFound!___"
             return
         
-        
-        # update simplegui module to Tkinter
+        self.up_module()
+        self.up_frame_canvas()
+        self.up_button()
+        self.up_label()
+        self.up_input()
+        self.up_ini()
+    
+    
+    def up_module(self):
+        """ update simplegui module to Tkinter """
+        global output_data
         MODULE_RE = re.compile(r'^(import [\w ,]*)simplegui', re.MULTILINE)
         output_data = MODULE_RE.sub(r'\1Tkinter', input_data)
+    
+    
+    def up_frame_canvas(self):
+        """ update the Frame and Canvas widget """
         
+        global output_data
         
-        # update the Frame and Canvas widget
         frame_widget = {
         "sg_frame":  "^(\w+) ?= ?simplegui.create_frame" + \
                      "\((\".+\"), ?(\d+), ?(\d+)(?:, ?\d+)?\)", 
@@ -71,67 +84,73 @@ class Simplegui2Tkinter:
         # if no need for Canvas widget, update only the Frame
         if "set_draw_handler" not in output_data:
             output_data = FRAME_RE.sub(r'%s' % frame_widget["tk_frame"], output_data)
-        
-        # update the Frame and Canvas widget
-        if "set_draw_handler" in output_data:
-            # find name of drawing handler
-            draw_handler = re.findall(r'^\w+.set_draw_handler\((.+)\)', output_data, 
-                                      re.MULTILINE)[0]
-            
-            # find all global variables used in code
-            global_var_str = ''.join(re.findall(r'^\s+global([ \w+,]+)', output_data, 
-                                                re.MULTILINE))
-            global_var_list = re.findall(r'(\w+)+', global_var_str)
-            
-            # select only global variables used in drawing handler
-            global_var_drw = []
-            for var in global_var_list:
-                global_var_drw += re.findall(
-                      r'^def %s\(\w+\):(?:\n .*)+[=( \-+*/](%s)[) \-+*/]*' % 
-                       (draw_handler, var), output_data, re.MULTILINE)
-            
-            # update functions containing global variables used by drawing handler
-            for var in global_var_drw:
-                fn_old = re.findall(r'(^\s+global .*%s(?:.*\n)+?)\n\S' % var, 
-                                    output_data, re.MULTILINE)[0]
-                space = re.findall(r'(    +?)global', fn_old)[0]
-                fn_new = fn_old[:-1] + space + draw_handler + "()\n\n"
-                output_data = re.sub(re.escape(fn_old), fn_new, output_data)
-            
-            # update drawing handler
-            DH_RE = re.compile(r'^def (%s)\(\w+\):\n(\s+)' % draw_handler, re.MULTILINE)
-            output_data = DH_RE.sub(r'def \1():\n\2w_canvas.delete("all")\n\2', output_data)
-            
-            # create canvas with size used in "simplegui.create_frame"
-            output_data = FRAME_RE.sub(r'%s%s' % (frame_widget["tk_frame"], 
-                                       canvas_widget["tk_canvas"]), output_data)
-            
-            # delete "set_draw_handler" and replace with drawing handler call
-            output_data = re.sub(r'\w+.set_draw_handler\(%s\)' % draw_handler, 
-                                 draw_handler+"()", output_data)
-            
-            # update Canvas methods
-            TXT_RE = re.compile(r'%s' % canvas_widget["sg_txt"], re.MULTILINE)
-            output_data = TXT_RE.sub(r'%s' % canvas_widget["tk_txt"], 
-                                     output_data)
+            return
         
         
-        # update Button widget(s)
+        # find name of drawing handler
+        draw_handler = re.findall(r'^\w+.set_draw_handler\((.+)\)', output_data, 
+                                  re.MULTILINE)[0]
+        
+        # find all global variables used in code
+        global_var_str = ''.join(re.findall(r'^\s+global([ \w+,]+)', output_data, 
+                                            re.MULTILINE))
+        global_var_list = re.findall(r'(\w+)+', global_var_str)
+        
+        # select only global variables used in drawing handler
+        global_var_drw = []
+        for var in global_var_list:
+            global_var_drw += re.findall(
+                  r'^def %s\(\w+\):(?:\n .*)+[=( \-+*/](%s)[) \-+*/]*' % 
+                   (draw_handler, var), output_data, re.MULTILINE)
+        
+        # update functions containing global variables used by drawing handler
+        for var in global_var_drw:
+            fn_old = re.findall(r'(^\s+global .*%s(?:.*\n)+?)\n\S' % var, 
+                                output_data, re.MULTILINE)[0]
+            space = re.findall(r'(    +?)global', fn_old)[0]
+            fn_new = fn_old[:-1] + space + draw_handler + "()\n\n"
+            output_data = re.sub(re.escape(fn_old), fn_new, output_data)
+        
+        # update drawing handler
+        DH_RE = re.compile(r'^def (%s)\(\w+\):\n(\s+)' % draw_handler, re.MULTILINE)
+        output_data = DH_RE.sub(r'def \1():\n\2w_canvas.delete("all")\n\2', output_data)
+        
+        # create canvas with size used in "simplegui.create_frame"
+        output_data = FRAME_RE.sub(r'%s%s' % (frame_widget["tk_frame"], 
+                                   canvas_widget["tk_canvas"]), output_data)
+        
+        # delete "set_draw_handler" and replace with drawing handler call
+        output_data = re.sub(r'\w+.set_draw_handler\(%s\)' % draw_handler, 
+                             draw_handler+"()", output_data)
+        
+        # update Canvas methods
+        TXT_RE = re.compile(r'%s' % canvas_widget["sg_txt"], re.MULTILINE)
+        output_data = TXT_RE.sub(r'%s' % canvas_widget["tk_txt"], 
+                                 output_data)
+    
+    
+    def up_button(self):
+        """ update Button widget(s) """
+        global output_data
         button_widget = {
         "sg_button": "^(\w+).add_button\((.+), ?(\w+), ?\d+\)", 
         "tk_button": "\\3_bt = Tkinter.Button(\\1, text=\\2, command=\\3)\n" + \
                      "\\3_bt.grid()"}
         BUTTON_RE = re.compile(r"%s" % button_widget["sg_button"], re.MULTILINE)
-        output_data = BUTTON_RE.sub(r"%s" % button_widget["tk_button"],
-                                    output_data)
-        
-        
-        # update Label widget(s)
-        #### To do
+        output_data = BUTTON_RE.sub(r"%s" % button_widget["tk_button"], output_data)
+    
+    
+    def up_label(self):
+        """ update Label widget(s) """
+        pass
         #### Tkinter.Label(window_root, text="")
+    
+    
+    def up_input(self):
+        """ update Entry/Input widget(s) """
         
+        global output_data
         
-        # update Entry/Input widget(s)
         if "add_input" in output_data:
             
             input_widget = {
@@ -160,7 +179,6 @@ class Simplegui2Tkinter:
                                         param_name, param_name), re.MULTILINE)
                 
                 handler_old = re.findall(HANDLER_RE, output_data)[0]
-                
                 handler_new = re.sub(input_widget["handler_param"] % 
                                      (input_name, param_name), 
                                      "%s_et.get()" % input_name, handler_old)
@@ -171,9 +189,11 @@ class Simplegui2Tkinter:
                 INPUT_RE = re.compile(r'%s' % input_widget["sg_input"], re.MULTILINE)
                 output_data = INPUT_RE.sub(r"%s" % input_widget["tk_input"], 
                                            output_data)
-        
-        
-        # update the initialization of the event loop
+    
+    
+    def up_ini(self):
+        """ update the initialization of the event loop """
+        global output_data
         START_RE = re.compile(r'^\w+.start\(\)', re.MULTILINE)
         output_data = START_RE.sub("window_root.mainloop()\n", output_data)
 
