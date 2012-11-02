@@ -131,7 +131,8 @@ class Simplegui2Tkinter:
         # Oval
         sg_circle = ".draw_circle\([\(\[](\d+), *(\d+)[\)\]], " + \
                     "*(\d+), *(\d+), *\"(\w+)\",? *\"?(\w+)?\"?\)\n"
-        tk_oval = 'w_canvas.create_oval((%d,%d,%d,%d), width=%s, outline="%s", fill="%s")\n'
+        tk_oval = 'w_canvas.create_oval((%d,%d,%d,%d), width=%s, ' + \
+                  'outline="%s", fill="%s")\n'
         ovals = re.findall(r"%s" % sg_circle, output_data)
         for oval in ovals:
             x, y, r, w, l, f = oval
@@ -150,11 +151,13 @@ class Simplegui2Tkinter:
         
         # Polygon
         sg_poly = "\w+.draw_polygon\(\[((?:[\[\(]\d+, \d+[\]\)],? ?)+)\], " + \
-                  "(\d+),\s*([\"\']\w+[\"\'])(?:,\s*[\"\'](\w+)[\"\'])?\)\n"
-        tk_poly = "w_canvas.create_polygon(\\1, width=\\2, outline=\\3, " + \
-                  "fill='')\n"
-        POLY_RE = re.compile(r'%s' % sg_poly)
-        output_data = POLY_RE.sub(r'%s' % tk_poly, output_data)
+                  "(\d+),\s*[\"\'](\w+)[\"\'](?:, *[\"\'](\w+)[\"\'])?\)\n"
+        tk_poly = "w_canvas.create_polygon(%s, width=%s, outline='%s', " + \
+                  "fill='%s')\n"
+        polygons = re.findall(r"%s" % sg_poly, output_data)
+        for polygon in polygons:
+            output_data = re.sub('\w+.draw_polygon\(\[%s\].*\s*.*\)\n' % re.escape(polygon[0]), 
+                                 tk_poly % (polygon), output_data)
     
     
     def up_button(self):
