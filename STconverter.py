@@ -168,11 +168,13 @@ class Simplegui2Tkinter:
             "param_name":    "^def %s\((\w+)\):", 
             "handler":       "^def %s\(%s\):(?:\n .*)+[=( \-+*/]%s[) \-+*/]", 
             "handler_param": "(?<=(?<!%s)[= \(\-+*/])%s(?=[ \)\-+*/\n])", 
-            "sg_input":      "^(\w+).add_input\((.+), ?(\w+), ?(\d+)\)", 
+            "sg_input":      "^(\w+).add_input\((.+), ?(\w+), ?(\d+)\d\)", 
             "tk_input":      "\\3_lb = Tkinter.Label(\\1, text=\\2)\n" + \
+                             "\\3_lb.config(width=\\4)\n" + \
                              "\\3_lb.grid()\n" + \
                              "\\3_et = Tkinter.Entry(\\1)\n" + \
                              "\\3_et.bind('<Return>', \\3)\n" + \
+                             "\\3_et.config(width=\\4)\n" + \
                              "\\3_et.grid()\n"}
             
             # retrieve all Input widgets and respective handler names
