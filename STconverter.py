@@ -130,13 +130,21 @@ class Simplegui2Tkinter:
         
         # Oval
         nb_oval = output_data.count(r".draw_circle")
-        for nb in range(nb_oval):
+        for oval in range(nb_oval):
             x, y, r, w = re.findall(r".draw_circle\([\[\(](\d+), (\d+)[\]\)], " + \
                                      "(\d+), (\d+)", output_data)[0]
             x1, y1 = (int(x) - int(r) / 2), (int(y) + int(r) / 2)
             output_data = re.sub(r'\w+.draw_circle\([\[\(]%s, %s[\]\)].*(\"\w+\").+\n' % (x, y), 
                                  r'w_canvas.create_oval((%d,%d,%d,%d), width=%s, outline=\1, fill="")\n' % 
                                  (x1, x1, y1, y1, w), output_data)
+        
+        # Line
+        sg_line = "\w+.draw_line\([\[\(](\d+), (\d+)[\]\)], ?" + \
+                  "[\[\(](\d+), (\d+)[\]\)], (\d+), (\"\w+\")\)\n"
+        tk_line = "w_canvas.create_line((\\1, \\2, \\3, \\4), " + \
+                  "width=\\5, fill=\\6)\n"
+        LINE_RE = re.compile(r'%s' % sg_line)
+        output_data = LINE_RE.sub(r'%s' % tk_line, output_data)
     
     
     def up_button(self):
