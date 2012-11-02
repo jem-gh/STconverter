@@ -129,13 +129,14 @@ class Simplegui2Tkinter:
         output_data = TXT_RE.sub(r'%s' % canvas_widget["tk_txt"], output_data)
         
         # Oval
-        if ".draw_circle" in output_data:
+        nb_oval = output_data.count(r".draw_circle")
+        for nb in range(nb_oval):
             x, y, r, w = re.findall(r".draw_circle\([\[\(](\d+), (\d+)[\]\)], " + \
                                      "(\d+), (\d+)", output_data)[0]
-            x, y = (int(x) - int(r) / 2), (int(y) + int(r) / 2)
-            output_data = re.sub(r'\w+.draw_circle.*(\"\w+\").+\n', 
+            x1, y1 = (int(x) - int(r) / 2), (int(y) + int(r) / 2)
+            output_data = re.sub(r'\w+.draw_circle\([\[\(]%s, %s[\]\)].*(\"\w+\").+\n' % (x, y), 
                                  r'w_canvas.create_oval((%d,%d,%d,%d), width=%s, outline=\1, fill="")\n' % 
-                                 (x, x, y, y, w), output_data)
+                                 (x1, x1, y1, y1, w), output_data)
     
     
     def up_button(self):
