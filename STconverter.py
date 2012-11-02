@@ -74,6 +74,8 @@ class Simplegui2Tkinter:
         canvas_widget = {
         "tk_canvas": "w_canvas = Tkinter.Canvas(\\1, width=\\3, height=\\4)\n" + \
                      "w_canvas.grid()\n", 
+        "sg_bg": "\w+.set_canvas_background\(\"(\w+)\"\)", 
+        "tk_bg": "w_canvas.configure(background='%s')", 
         "sg_txt": "\w+.draw_text\((.+), ?" + \
                   "[\[\(](\d+), (\d+)[\]\)], (\d+), (\"\w+\")\)", 
         "tk_txt": "w_canvas.create_text((\\2, \\3), anchor='sw', " + \
@@ -116,8 +118,14 @@ class Simplegui2Tkinter:
         output_data = DH_RE.sub(r'def \1():\n\2w_canvas.delete("all")\n\2', output_data)
         
         # create canvas with size used in "simplegui.create_frame"
+        # and with a black background by default
+        bg_color = "Black"
+        if ".set_canvas_background" in output_data:
+            bg_color = re.findall(canvas_widget["sg_bg"], output_data)[0]
+            output_data = re.sub(canvas_widget["sg_bg"], '', output_data)
         output_data = FRAME_RE.sub(r'%s\n%s' % (frame_widget["tk_frame"], 
-                                   canvas_widget["tk_canvas"]), output_data)
+                                    canvas_widget["tk_canvas"] + \
+                                    canvas_widget["tk_bg"] % bg_color), output_data)
         
         # delete "set_draw_handler" and replace with drawing handler call
         output_data = re.sub(r'\w+.set_draw_handler\(%s\)' % draw_handler, 
