@@ -116,12 +116,12 @@ class Simplegui2Tkinter:
         output_data = DH_RE.sub(r'def \1():\n\2w_canvas.delete("all")\n\2', output_data)
         
         # create canvas with size used in "simplegui.create_frame"
-        output_data = FRAME_RE.sub(r'%s%s' % (frame_widget["tk_frame"], 
+        output_data = FRAME_RE.sub(r'%s\n%s' % (frame_widget["tk_frame"], 
                                    canvas_widget["tk_canvas"]), output_data)
         
         # delete "set_draw_handler" and replace with drawing handler call
         output_data = re.sub(r'\w+.set_draw_handler\(%s\)' % draw_handler, 
-                             draw_handler+"()", output_data)
+                             draw_handler+"()\n", output_data)
         
         # update Canvas methods
         # Text
@@ -144,7 +144,7 @@ class Simplegui2Tkinter:
         button_widget = {
         "sg_button": "^(\w+).add_button\((.+), ?(\w+), ?\d+\)", 
         "tk_button": "\\3_bt = Tkinter.Button(\\1, text=\\2, command=\\3)\n" + \
-                     "\\3_bt.grid()"}
+                     "\\3_bt.grid()\n"}
         BUTTON_RE = re.compile(r"%s" % button_widget["sg_button"], re.MULTILINE)
         output_data = BUTTON_RE.sub(r"%s" % button_widget["tk_button"], output_data)
     
