@@ -133,7 +133,7 @@ class Simplegui2Tkinter:
         for oval in range(nb_oval):
             x, y, r, w = re.findall(r".draw_circle\([\[\(](\d+), (\d+)[\]\)], " + \
                                      "(\d+), (\d+)", output_data)[0]
-            x1, y1 = (int(x) - int(r) / 2), (int(y) + int(r) / 2)
+            x1, y1 = (int(x) - int(r)), (int(y) + int(r))
             output_data = re.sub(r'\w+.draw_circle\([\[\(]%s, %s[\]\)].*(\"\w+\").+\n' % (x, y), 
                                  r'w_canvas.create_oval((%d,%d,%d,%d), width=%s, outline=\1, fill="")\n' % 
                                  (x1, x1, y1, y1, w), output_data)
