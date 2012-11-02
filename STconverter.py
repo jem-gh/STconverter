@@ -151,7 +151,7 @@ class Simplegui2Tkinter:
         sg_poly = "\w+.draw_polygon\(\[((?:[\[\(]\d+, \d+[\]\)],? ?)+)\], " + \
                   "(\d+),\s*([\"\']\w+[\"\'])(?:,\s*[\"\'](\w+)[\"\'])?\)\n"
         tk_poly = "w_canvas.create_polygon(\\1, width=\\2, outline=\\3, " + \
-                  "fill=''\)\n"
+                  "fill='')\n"
         POLY_RE = re.compile(r'%s' % sg_poly)
         output_data = POLY_RE.sub(r'%s' % tk_poly, output_data)
     
