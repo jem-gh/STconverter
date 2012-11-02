@@ -50,6 +50,7 @@ class Simplegui2Tkinter:
         self.up_label()
         self.up_input()
         self.up_ini()
+        self.up_color()
     
     
     def up_module(self):
@@ -238,6 +239,15 @@ class Simplegui2Tkinter:
         global output_data
         START_RE = re.compile(r'^\w+.start\(\)', re.MULTILINE)
         output_data = START_RE.sub("window_root.mainloop()\n", output_data)
+    
+    
+    def up_color(self):
+        """ some colors used to draw object in SimpleGUI canvas aren't 
+            recognized by Tkinter ... try to find a color as close as 
+            possible for the colors with known issue """
+        global output_data
+        output_data = re.sub(r"[\"\']Lime[\"\']", r"'Lime green'", output_data)
+        output_data = re.sub(r"[\"\']Aqua[\"\']", r"'Cyan'", output_data)
 
 
 
