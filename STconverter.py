@@ -129,15 +129,16 @@ class Simplegui2Tkinter:
         output_data = TXT_RE.sub(r'%s' % canvas_widget["tk_txt"], output_data)
         
         # Oval
-        nb_oval = output_data.count(r".draw_circle")
-        for oval in range(nb_oval):
-            x, y, r, w = re.findall(r".draw_circle\([\[\(](\d+), (\d+)[\]\)], " + \
-                                     "(\d+), (\d+)", output_data)[0]
+        sg_circle = ".draw_circle\([\(\[](\d+), *(\d+)[\)\]], " + \
+                    "*(\d+), *(\d+), *\"(\w+)\",? *\"?(\w+)?\"?\)\n"
+        tk_oval = 'w_canvas.create_oval((%d,%d,%d,%d), width=%s, outline="%s", fill="%s")\n'
+        ovals = re.findall(r"%s" % sg_circle, output_data)
+        for oval in ovals:
+            x, y, r, w, l, f = oval
             x1, x2 = (int(x) - int(r)), (int(x) + int(r))
             y1, y2 = (int(y) - int(r)), (int(y) + int(r))
-            output_data = re.sub(r'\w+.draw_circle\([\[\(]%s, %s[\]\)].*(\"\w+\").+\n' % (x, y), 
-                                 r'w_canvas.create_oval((%d,%d,%d,%d), width=%s, outline=\1, fill="")\n' % 
-                                 (x1, y1, x2, y2, w), output_data)
+            output_data = re.sub(r'\w+.draw_circle\([\[\(]%s, *%s[\]\)].*\n' % (x, y), 
+                                 tk_oval % (x1, y1, x2, y2, w, l, f), output_data)
         
         # Line
         sg_line = "\w+.draw_line\([\[\(](\d+), (\d+)[\]\)], ?" + \
