@@ -199,7 +199,7 @@ class Simplegui2Tkinter:
             "param_name":    "^def %s\((\w+)\):", 
             "handler":       "^def %s\(%s\):(?:\n .*)+[=( \-+*/]%s[) \-+*/\n]", 
             "handler_param": "(?<=(?<!%s)[= \(\-+*/])%s(?=[ \)\-+*/\n])", 
-            "sg_input":      "(?:\w+ ?=? ?)?(\w+).add_input\((.+), ?(\w+), ?(\d+)\d\)", 
+            "sg_input":      "(?:\w+ ?= ?)?(\w+).add_input\((.+), ?(\w+), ?(\d+)\d\)", 
             "tk_input":      "\\3_lb = Tkinter.Label(\\1, text=\\2)\n" + \
                              "\\3_lb.config(width=\\4)\n" + \
                              "\\3_lb.grid()\n" + \
