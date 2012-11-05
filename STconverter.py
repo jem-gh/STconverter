@@ -195,11 +195,11 @@ class Simplegui2Tkinter:
         if "add_input" in output_data:
             
             input_widget = {
-            "input_name":    "^\w+.add_input\(.+, ?(\w+), ?\d+\)", 
+            "input_name":    "\w+.add_input\(.+, ?(\w+), ?\d+\)", 
             "param_name":    "^def %s\((\w+)\):", 
-            "handler":       "^def %s\(%s\):(?:\n .*)+[=( \-+*/]%s[) \-+*/]", 
+            "handler":       "^def %s\(%s\):(?:\n .*)+[=( \-+*/]%s[) \-+*/\n]", 
             "handler_param": "(?<=(?<!%s)[= \(\-+*/])%s(?=[ \)\-+*/\n])", 
-            "sg_input":      "^(\w+).add_input\((.+), ?(\w+), ?(\d+)\d\)", 
+            "sg_input":      "(?:\w+ ?=? ?)?(\w+).add_input\((.+), ?(\w+), ?(\d+)\d\)", 
             "tk_input":      "\\3_lb = Tkinter.Label(\\1, text=\\2)\n" + \
                              "\\3_lb.config(width=\\4)\n" + \
                              "\\3_lb.grid()\n" + \
@@ -209,8 +209,7 @@ class Simplegui2Tkinter:
                              "\\3_et.grid()\n"}
             
             # retrieve all Input widgets and respective handler names
-            input_names = re.findall(r'%s' % input_widget["input_name"], 
-                                     output_data, re.MULTILINE)
+            input_names = re.findall(r'%s' % input_widget["input_name"], output_data)
             
             for input_name in input_names:
                 # retrieve parameter name used in the Input handler
@@ -229,7 +228,7 @@ class Simplegui2Tkinter:
                 output_data = output_data.replace(handler_old, handler_new)
                 
                 ## write Tkinter GUI of the Input widget
-                INPUT_RE = re.compile(r'%s' % input_widget["sg_input"], re.MULTILINE)
+                INPUT_RE = re.compile(r'%s' % input_widget["sg_input"])
                 output_data = INPUT_RE.sub(r"%s" % input_widget["tk_input"], 
                                            output_data)
     
