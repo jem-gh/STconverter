@@ -94,26 +94,6 @@ class Simplegui2Tkinter:
         draw_handler = re.findall(r'^\w+.set_draw_handler\((.+)\)', output_data, 
                                   re.MULTILINE)[0]
         
-        # find all global variables used in code
-        global_var_str = ''.join(re.findall(r'^\s+global([ \w+,]+)', output_data, 
-                                            re.MULTILINE))
-        global_var_list = re.findall(r'(\w+)+', global_var_str)
-        
-        # select only global variables used in drawing handler
-        global_var_drw = []
-        for var in global_var_list:
-            global_var_drw += re.findall(
-                  r'^def %s\(\w+\):(?:\n .*)+[=( \-+*/](%s)[) \-+*/]*' % 
-                   (draw_handler, var), output_data, re.MULTILINE)
-        
-        # update functions containing global variables used by drawing handler
-        for var in global_var_drw:
-            fn_old = re.findall(r'(^\s+global .*%s(?:.*\n)+?)\n\S' % var, 
-                                output_data, re.MULTILINE)[0]
-            space = re.findall(r'(    +?)global', fn_old)[0]
-            fn_new = fn_old + space + draw_handler + "()\n\n"
-            output_data = re.sub(re.escape(fn_old), fn_new, output_data)
-        
         # update drawing handler
         DH_RE = re.compile(r'^def (%s)\(\w+\):\n(\s+)' % draw_handler, re.MULTILINE)
         output_data = DH_RE.sub(r'def \1():\n\2w_canvas.delete("all")\n\2', output_data)
@@ -128,9 +108,15 @@ class Simplegui2Tkinter:
                                     canvas_widget["tk_canvas"] + \
                                     canvas_widget["tk_bg"] % bg_color), output_data)
         
-        # delete "set_draw_handler" and replace with drawing handler call
-        output_data = re.sub(r'\w+.set_draw_handler\(%s\)' % draw_handler, 
-                             draw_handler+"()\n", output_data)
+        # replace "set_draw_handler" with drawing handler call
+        refresh_time = 66 # in ms (66ms~15fps; 33ms~30fps; 17ms~60fps)
+        
+        dh_old = "\w+.set_draw_handler\(%s\)" % draw_handler
+        dh_new = "def refresh_canvas():\n" + \
+                 "    %s()\n" % draw_handler + \
+                 "    window_root.after(%d, refresh_canvas)\n\n" % refresh_time + \
+                 "refresh_canvas()\n"
+        output_data = re.sub(dh_old, dh_new, output_data)
         
         # update Canvas methods
         # Text
