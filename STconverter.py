@@ -78,9 +78,9 @@ class Simplegui2Tkinter:
         "sg_bg": "\w+.set_canvas_background\(\"(\w+)\"\)", 
         "tk_bg": "w_canvas.configure(background='%s')", 
         "sg_txt": "\w+.draw_text\((.+), ?" + \
-                  "[\[\(](\d+), (\d+)[\]\)], (\d+), (\"\w+\")\)", 
-        "tk_txt": "w_canvas.create_text((\\2, \\3), anchor='sw', " + \
-                  "text=\\1, font=('DejaVu Serif Condensed', \\4), fill=\\5)"}
+                  "(\w+|[\[\(][\w ,]+[\]\)]), (\d+), (\"\w+\")\)", 
+        "tk_txt": "w_canvas.create_text(\\2, anchor='sw', " + \
+                  "text=\\1, font=('DejaVu Serif Condensed', \\3), fill=\\4)"}
         
         FRAME_RE = re.compile(r'%s' % frame_widget["sg_frame"], re.MULTILINE)
         
