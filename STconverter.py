@@ -111,7 +111,7 @@ class Simplegui2Tkinter:
             fn_old = re.findall(r'(^\s+global .*%s(?:.*\n)+?)\n\S' % var, 
                                 output_data, re.MULTILINE)[0]
             space = re.findall(r'(    +?)global', fn_old)[0]
-            fn_new = fn_old[:-1] + space + draw_handler + "()\n\n"
+            fn_new = fn_old + space + draw_handler + "()\n\n"
             output_data = re.sub(re.escape(fn_old), fn_new, output_data)
         
         # update drawing handler
