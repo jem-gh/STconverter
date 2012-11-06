@@ -72,10 +72,10 @@ class Simplegui2Tkinter:
         "tk_frame":  "window_root = Tkinter.Tk()\n" + \
                      "window_root.title(\\2)\n" + \
                      "\\1 = Tkinter.Frame(window_root)\n" + \
-                     "\\1.grid()\n"}
+                     "\\1.pack()\n"}
         canvas_widget = {
         "tk_canvas": "w_canvas = Tkinter.Canvas(\\1, width=\\3, height=\\4)\n" + \
-                     "w_canvas.grid()\n", 
+                     "w_canvas.pack(side='right')\n", 
         "sg_bg": "\w+.set_canvas_background\(\"(\w+)\"\)", 
         "tk_bg": "w_canvas.configure(background='%s')\n", 
         "sg_txt": "\w+.draw_text\((.+), ?" + \
@@ -164,7 +164,7 @@ class Simplegui2Tkinter:
         "sg_button": "(?:\w+ ?= ?)?(\w+).add_button\((.+), ?(\w+), ?(\d+)\d\)([ #\w]*)", 
         "tk_button": "\\3_bt = Tkinter.Button(\\1, text=\\2, command=\\3)\\5\n" + \
                      "\\3_bt.config(width=\\4)\n" + \
-                     "\\3_bt.grid()\n"}
+                     "\\3_bt.pack()\n"}
         BUTTON_RE = re.compile(r"%s" % button_widget["sg_button"], re.MULTILINE)
         output_data = BUTTON_RE.sub(r"%s" % button_widget["tk_button"], output_data)
     
@@ -175,7 +175,7 @@ class Simplegui2Tkinter:
         global output_data
         
         sg_label = "\w+.add_label\(([\"\']?.*[\"\']?)\)"
-        tk_label = "Tkinter.Label(window_root, text=\\1).grid()"
+        tk_label = "Tkinter.Label(window_root, text=\\1).pack()"
         output_data = re.sub(sg_label, tk_label, output_data)
     
     
@@ -194,11 +194,11 @@ class Simplegui2Tkinter:
             "sg_input":      "(?:\w+ ?= ?)?(\w+).add_input\((.+), ?(\w+), ?(\d+)\d\)([ #\w]*)", 
             "tk_input":      "\\3_lb = Tkinter.Label(\\1, text=\\2)\\5\n" + \
                              "\\3_lb.config(width=\\4)\n" + \
-                             "\\3_lb.grid()\n" + \
+                             "\\3_lb.pack()\n" + \
                              "\\3_et = Tkinter.Entry(\\1)\n" + \
                              "\\3_et.bind('<Return>', \\3)\n" + \
                              "\\3_et.config(width=\\4)\n" + \
-                             "\\3_et.grid()\n"}
+                             "\\3_et.pack()\n"}
             
             # retrieve all Input widgets and respective handler names
             input_names = re.findall(r'%s' % input_widget["input_name"], output_data)
