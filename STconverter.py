@@ -161,7 +161,7 @@ class Simplegui2Tkinter:
         """ update Button widget(s) """
         global output_data
         button_widget = {
-        "sg_button": "^(\w+).add_button\((.+), ?(\w+), ?(\d+)\d\)", 
+        "sg_button": "(?:\w+ ?= ?)(\w+).add_button\((.+), ?(\w+), ?(\d+)\d\)", 
         "tk_button": "\\3_bt = Tkinter.Button(\\1, text=\\2, command=\\3)\n" + \
                      "\\3_bt.config(width=\\4)\n" + \
                      "\\3_bt.grid()\n"}
