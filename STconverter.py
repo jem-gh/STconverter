@@ -174,8 +174,8 @@ class Simplegui2Tkinter:
         
         global output_data
         
-        sg_label = "\w+.add_label\([\"\'](.*)[\"\']\)"
-        tk_label = 'Tkinter.Label(window_root, text="\\1")'
+        sg_label = "\w+.add_label\(([\"\']?.*[\"\']?)\)"
+        tk_label = "Tkinter.Label(window_root, text=\\1)"
         output_data = re.sub(sg_label, tk_label, output_data)
     
     
