@@ -187,8 +187,8 @@ class Simplegui2Tkinter:
             "param_name":    "^def %s\((\w+)\):", 
             "handler":       "^def %s\(%s\):(?:\n .*)+[=( \-+*/]%s[) \-+*/\n]", 
             "handler_param": "(?<=(?<!%s)[= \(\-+*/])%s(?=[ \)\-+*/\n])", 
-            "sg_input":      "(?:\w+ ?= ?)?(\w+).add_input\((.+), ?(\w+), ?(\d+)\d\)", 
-            "tk_input":      "\\3_lb = Tkinter.Label(\\1, text=\\2)\n" + \
+            "sg_input":      "(?:\w+ ?= ?)?(\w+).add_input\((.+), ?(\w+), ?(\d+)\d\)([ #\w]*)", 
+            "tk_input":      "\\3_lb = Tkinter.Label(\\1, text=\\2)\\5\n" + \
                              "\\3_lb.config(width=\\4)\n" + \
                              "\\3_lb.grid()\n" + \
                              "\\3_et = Tkinter.Entry(\\1)\n" + \
