@@ -193,7 +193,6 @@ class Simplegui2Tkinter:
             "handler_param": "(?<=(?<!%s)[= \(\-+*/])%s(?=[ \)\-+*/\n])", 
             "sg_input":      "(?:\w+ ?= ?)?(\w+).add_input\((.+), ?(\w+), ?(\d+)\d\)([ #\w]*)", 
             "tk_input":      "\\3_lb = Tkinter.Label(\\1, text=\\2)\\5\n" + \
-                             "\\3_lb.config(width=\\4)\n" + \
                              "\\3_lb.pack()\n" + \
                              "\\3_et = Tkinter.Entry(\\1)\n" + \
                              "\\3_et.bind('<Return>', \\3)\n" + \
