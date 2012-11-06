@@ -79,7 +79,7 @@ class Simplegui2Tkinter:
         "sg_bg": "\w+.set_canvas_background\(\"(\w+)\"\)", 
         "tk_bg": "w_canvas.configure(background='%s')\n", 
         "sg_txt": "\w+.draw_text\((.+), ?" + \
-                  "(\w+|[\[\(][\w ,]+[\]\)]), (\d+), (\"\w+\")\)", 
+                  "(\w+|[\[\(][\w ,]+[\]\)]), (\d+), (\"?\w+\"?)\)", 
         "tk_txt": "w_canvas.create_text(\\2, anchor='sw', " + \
                   "text=\\1, font=('DejaVu Serif Condensed', \\3), fill=\\4)"}
         
