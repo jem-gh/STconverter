@@ -250,7 +250,7 @@ class Simplegui2Tkinter:
                            "    window_root.after(\\1, %s_fn)\n" % timer_name + \
                            "    if %s_status:\n" % timer_name + \
                            "        \\2()\n\n" + \
-                           "%s_fn()" % timer_name
+                           "%s_fn()\n" % timer_name
                 output_data = re.sub(sg_timer, tk_timer, output_data)
     
     
