@@ -97,7 +97,7 @@ class Simplegui2Tkinter:
         
         # update drawing handler
         DH_RE = re.compile(r'^def (%s)\(\w+\):\n(\s+)' % draw_handler, re.MULTILINE)
-        output_data = DH_RE.sub(r'def \1():\n\2w_canvas.delete("all")\n\2', output_data)
+        output_data = DH_RE.sub(r'def \1():\n\2w_canvas.delete("all")\n\2\n\2', output_data)
         
         # create canvas with size used in "simplegui.create_frame"
         # and with a black background by default
