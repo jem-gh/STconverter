@@ -147,12 +147,12 @@ class Simplegui2Tkinter:
         
         # Polygon
         sg_poly = "\w+.draw_polygon\(\[((?:[\[\(]\d+, \d+[\]\)],? ?)+)\], " + \
-                  "(\d+),\s*[\"\'](\w+)[\"\'](?:, *[\"\'](\w+)[\"\'])?\)\n"
+                  "(\d+),\s*[\"\'](\w+)[\"\'](?:, *[\"\'](\w+)[\"\'])?\)"
         tk_poly = "w_canvas.create_polygon(%s, width=%s, outline='%s', " + \
-                  "fill='%s')\n"
+                  "fill='%s')"
         polygons = re.findall(r"%s" % sg_poly, output_data)
         for polygon in polygons:
-            output_data = re.sub('\w+.draw_polygon\(\[%s\].*\s*.*\)\n' % re.escape(polygon[0]), 
+            output_data = re.sub('\w+.draw_polygon\(\[%s\].*?\s*?.*?\)' % re.escape(polygon[0]), 
                                  tk_poly % (polygon), output_data)
     
     
