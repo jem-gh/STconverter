@@ -126,15 +126,15 @@ class Simplegui2Tkinter:
         
         # Oval
         sg_circle = ".draw_circle\([\(\[](\d+), *(\d+)[\)\]], " + \
-                    "*(\d+), *(\d+), *\"(\w+)\",? *\"?(\w+)?\"?\)\n"
+                    "*(\d+), *(\d+), *\"(\w+)\",? *\"?(\w+)?\"?\)"
         tk_oval = 'w_canvas.create_oval((%d,%d,%d,%d), width=%s, ' + \
-                  'outline="%s", fill="%s")\n'
+                  'outline="%s", fill="%s")'
         ovals = re.findall(r"%s" % sg_circle, output_data)
         for oval in ovals:
             x, y, r, w, l, f = oval
             x1, x2 = (int(x) - int(r)), (int(x) + int(r))
             y1, y2 = (int(y) - int(r)), (int(y) + int(r))
-            output_data = re.sub(r'\w+.draw_circle\([\[\(]%s, *%s[\]\)].*\n' % (x, y), 
+            output_data = re.sub(r'\w+.draw_circle\([\[\(]%s, *%s[\]\)].*\)' % (x, y), 
                                  tk_oval % (x1, y1, x2, y2, w, l, f), output_data)
         
         # Line
