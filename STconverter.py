@@ -134,7 +134,8 @@ class Simplegui2Tkinter:
             x, y, r, w, l, f = oval
             x1, x2 = (int(x) - int(r)), (int(x) + int(r))
             y1, y2 = (int(y) - int(r)), (int(y) + int(r))
-            output_data = re.sub(r'\w+.draw_circle\([\[\(]%s, *%s[\]\)].*\)' % (x, y), 
+            output_data = re.sub(r'\w+.draw_circle\([\[\(]%s, *%s[\]\)]' % (x, y) + \
+                                  '.+%s.+%s.+%s.+(?:%s.+)?\)' % (r, w, l, f), 
                                  tk_oval % (x1, y1, x2, y2, w, l, f), output_data)
         
         # Line
