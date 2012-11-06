@@ -49,6 +49,7 @@ class Simplegui2Tkinter:
         self.up_button()
         self.up_label()
         self.up_input()
+        self.up_timer()
         self.up_ini()
         self.up_color()
     
@@ -217,6 +218,39 @@ class Simplegui2Tkinter:
                 INPUT_RE = re.compile(r'%s' % input_widget["sg_input"])
                 output_data = INPUT_RE.sub(r"%s" % input_widget["tk_input"], 
                                            output_data)
+    
+    
+    def up_timer(self):
+        """ update timer event """
+        
+        global output_data
+        
+        if ".create_timer(" in output_data:
+            
+            # retrieve all Timer widgets' names
+            timer_names = re.findall("(\w+) ?= ?simplegui.create_timer\(", output_data)
+            
+            for timer_name in timer_names:
+                # update timer event handler
+                sg_timer_start = "%s.start\(\)" % timer_name
+                sg_timer_stop =  "%s.stop\(\)" % timer_name
+                tk_timer_start = "%s_st(True)" % timer_name
+                tk_timer_stop =  "%s_st(False)" % timer_name
+                output_data = re.sub(sg_timer_start, tk_timer_start, output_data)
+                output_data = re.sub(sg_timer_stop, tk_timer_stop, output_data)
+                
+                # update timer
+                sg_timer = "%s ?= ?simplegui.create_timer\((\w+), (\w+)\)" % timer_name
+                tk_timer = "%s_status = False\n\n" % timer_name + \
+                           "def %s_st(status):\n" % timer_name + \
+                           "    global %s_status\n" % timer_name + \
+                           "    %s_status = status\n\n" % timer_name + \
+                           "def %s_fn():\n" % timer_name + \
+                           "    window_root.after(\\1, %s_fn)\n" % timer_name + \
+                           "    if %s_status:\n" % timer_name + \
+                           "        \\2()\n\n" + \
+                           "%s_fn()" % timer_name
+                output_data = re.sub(sg_timer, tk_timer, output_data)
     
     
     def up_ini(self):
