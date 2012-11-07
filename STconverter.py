@@ -126,18 +126,45 @@ class Simplegui2Tkinter:
         output_data = TXT_RE.sub(r'%s' % canvas_widget["tk_txt"], output_data)
         
         # Oval
-        sg_circle = ".draw_circle\([\(\[](\d+), *(\d+)[\)\]], " + \
+        sg_circle = ".draw_circle\((\w+|[\(\[\d, \)\]]+), " + \
                     "*(\d+), *(\d+), *\"(\w+)\",? *\"?(\w+)?\"?\)"
-        tk_oval = 'w_canvas.create_oval((%d,%d,%d,%d), width=%s, ' + \
-                  'outline="%s", fill="%s")'
+        tk_oval =     'w_canvas.create_oval((%d,%d,%d,%d), width=%s, ' + \
+                      'outline="%s", fill="%s")'
+        tk_oval_var = '%s_x, %s_y = %s\n' + \
+                      '%s%s_r = %s\n' + \
+                      '%s%s_x1, %s_x2 = (%s_x - %s_r), (%s_x + %s_r)\n' + \
+                      '%s%s_y1, %s_y2 = (%s_y - %s_r), (%s_y + %s_r)\n' + \
+                      '%s%sw_canvas.create_oval((%s_x1,%s_y1,%s_x2,%s_y2), width=%s, ' + \
+                      'outline="%s", fill="%s")'
         ovals = re.findall(r"%s" % sg_circle, output_data)
+        
         for oval in ovals:
-            x, y, r, w, l, f = oval
-            x1, x2 = (int(x) - int(r)), (int(x) + int(r))
-            y1, y2 = (int(y) - int(r)), (int(y) + int(r))
-            output_data = re.sub(r'\w+.draw_circle\([\[\(]%s, *%s[\]\)]' % (x, y) + \
-                                  '.+%s.+%s.+%s.+(?:%s.+)?\)' % (r, w, l, f), 
-                                 tk_oval % (x1, y1, x2, y2, w, l, f), output_data)
+            # if position use digit
+            if not re.findall(r"[a-zA-Z]", oval[0]):
+                xy, r, w, l, f = oval
+                x, y = re.findall(r"\d+", xy)
+                x1, x2 = (int(x) - int(r)), (int(x) + int(r))
+                y1, y2 = (int(y) - int(r)), (int(y) + int(r))
+                output_data = re.sub(r'\w+.draw_circle\([\[\(]%s, *%s[\]\)]' % (x, y) + \
+                                      '.+%s.+%s.+%s.+(?:%s.+)?\)' % (r, w, l, f), 
+                                     tk_oval % (x1, y1, x2, y2, w, l, f), output_data)
+            
+            else:
+                var, r, w, l, f = oval
+                name = re.findall(r'(\w+ ?= ?)\w+.draw_circle\(%s' % var + \
+                                   '.+%s.+%s.+%s.+(?:%s.+)?\)' % (r, w, l, f), output_data)
+                name = name[0] if name else ''
+                space = re.findall(r'( *).+draw_circle\(%s' % var + \
+                                    '.+%s.+%s.+%s.+(?:%s.+)?\)' % (r, w, l, f), output_data)
+                space = space[0] if space else ''
+                output_data = re.sub(r'(\w+ ?= ?)?\w+.draw_circle\(%s' % var + \
+                                      '.+%s.+%s.+%s.+(?:%s.+)?\)' % (r, w, l, f), 
+                                     tk_oval_var % (var, var, var, 
+                                                    space,var, r, 
+                                                    space,var,var,var,var,var,var,
+                                                    space,var,var,var,var,var,var,
+                                                    space,name,var,var,var,var, w,
+                                                    l, f), output_data)
         
         # Line
         sg_line = "\w+.draw_line\([\[\(](\d+), (\d+)[\]\)], ?" + \
