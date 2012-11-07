@@ -50,6 +50,7 @@ class Simplegui2Tkinter:
         self.up_label()
         self.up_input()
         self.up_timer()
+        self.up_key()
         self.up_ini()
         self.up_color()
     
@@ -282,6 +283,41 @@ class Simplegui2Tkinter:
                            "        \\2()\n\n" + \
                            "%s_fn()\n" % timer_name
                 output_data = re.sub(sg_timer, tk_timer, output_data)
+    
+    
+    def up_key(self):
+        """ update event handlers involved when a key is pressed or released """
+        
+        global output_data
+        
+        # event handler when a key is pressed
+        
+        # find function(s) called by event handler when a key is pressed
+        key_pressed = "\w+.set_keydown_handler\((\w+)\)"
+        key_pressed_eh_names = re.findall(key_pressed, output_data)
+        
+        # for each event handler, update event handler and associated function
+        for eh_name in key_pressed_eh_names:
+            # retrieve parameter name used by event handler
+            eh_param = re.findall(r"def %s\((\w+)\)" % eh_name, output_data)[0]
+            # retrieve entire event handler to modify it
+            eh_old = re.findall("def %s\(\w+\):\n(?: {4}.+\n)+" % eh_name, 
+                               output_data)[0]
+            # update the capturing of key event
+            eh_new = re.sub("chr\((%s)\)" % eh_param, "\\1.keysym", eh_old)
+            # update output_data
+            output_data = re.sub(re.escape(eh_old), eh_new, output_data)
+            
+            # update event handler
+            output_data = re.sub(r"(\w+).set_keydown_handler\((\w+)\)", 
+                                 r'\1.bind("<Key>", \2)\n' + \
+                                  '\1.focus_set()\n', 
+                                 output_data)
+        
+        # find function(s) called by event handler when a key is released
+        output_data = re.sub(r"(\w+).set_keyup_handler\((\w+)\)",
+                             r'\1.bind("<KeyRelease>", \2)\n',
+                             output_data)
     
     
     def up_ini(self):
