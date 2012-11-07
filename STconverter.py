@@ -338,7 +338,7 @@ class Simplegui2Tkinter:
             # update event handler
             output_data = re.sub(r"(\w+).set_keydown_handler\((\w+)\)", 
                                  r'\1.bind("<Key>", \2)\n' + \
-                                  '\1.focus_set()\n', 
+                                  '\\1.focus_set()\n', 
                                  output_data)
         
         # find function(s) called by event handler when a key is released
