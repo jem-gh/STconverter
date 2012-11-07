@@ -127,7 +127,7 @@ class Simplegui2Tkinter:
         
         # Oval
         sg_circle = ".draw_circle\((\w+|[\(\[\d, \)\]]+), " + \
-                    "*(\d+), *(\d+), *\"(\w+)\",? *\"?(\w+)?\"?\)"
+                    "*(\w+|\d+), *(\d+), *\"(\w+)\",? *\"?(\w+)?\"?\)"
         tk_oval =     'w_canvas.create_oval((%d,%d,%d,%d), width=%s, ' + \
                       'outline="%s", fill="%s")'
         tk_oval_var = '%s_x, %s_y = %s\n' + \
@@ -139,8 +139,11 @@ class Simplegui2Tkinter:
         ovals = re.findall(r"%s" % sg_circle, output_data)
         
         for oval in ovals:
-            # if position use digit
-            if not re.findall(r"[a-zA-Z]", oval[0]):
+            is_pos_digit = not re.findall(r"[a-zA-Z]", oval[0])
+            is_rad_digit = not re.findall(r"[a-zA-Z]", oval[1])
+            
+            # if position and radius use digit
+            if is_pos_digit and is_rad_digit:
                 xy, r, w, l, f = oval
                 x, y = re.findall(r"\d+", xy)
                 x1, x2 = (int(x) - int(r)), (int(x) + int(r))
@@ -149,6 +152,7 @@ class Simplegui2Tkinter:
                                       '.+%s.+%s.+%s.+(?:%s.+)?\)' % (r, w, l, f), 
                                      tk_oval % (x1, y1, x2, y2, w, l, f), output_data)
             
+            # if position and/or radius is a variable
             else:
                 var, r, w, l, f = oval
                 name = re.findall(r'(\w+ ?= ?)\w+.draw_circle\(%s' % var + \
