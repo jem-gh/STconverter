@@ -366,7 +366,8 @@ class Simplegui2Tkinter:
         global output_data
         frame_name = re.findall(r"(\w+) = Tkinter.Frame\(", output_data)
         START_RE = re.compile(r"^%s.start\(\)" % frame_name[0], re.MULTILINE)
-        output_data = START_RE.sub("window_root.mainloop()\n", output_data)
+        output_data = START_RE.sub("", output_data)
+        output_data = output_data + "\n\nwindow_root.mainloop()\n"
     
     
     def up_color(self):
