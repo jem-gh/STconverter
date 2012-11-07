@@ -345,6 +345,16 @@ class Simplegui2Tkinter:
         output_data = re.sub(r"(\w+).set_keyup_handler\((\w+)\)",
                              r'\1.bind("<KeyRelease>", \2)\n',
                              output_data)
+        
+        # update other key events
+        
+        # recognition of a specific pressed key
+        keys = re.findall(r"(\w+) ?== ?simplegui.KEY_MAP\[[\"\'](\w+)[\"\']\]", 
+                          output_data)
+        for key in keys:
+            output_data = re.sub("%s ?== ?simplegui.KEY_MAP\[[\"\']%s[\"\']\]" % key, 
+                                 '%s.keysym == "%s"' % (key[0], key[1].title()),
+                                 output_data)
     
     
     def up_ini(self):
