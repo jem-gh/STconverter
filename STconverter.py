@@ -126,8 +126,8 @@ class Simplegui2Tkinter:
         output_data = TXT_RE.sub(r'%s' % canvas_widget["tk_txt"], output_data)
         
         # Oval
-        sg_circle = ".draw_circle\((\w+|[\(\[\d, \)\]]+), " + \
-                    "*(\w+|\d+), *(\w+|\d+), *([\"\']?\w+[\"\']?),? *([\"\']?\w*?[\"\']?)\)"
+        sg_circle = ".draw_circle\( *(\w+|[\(\[\d, \)\]]+) *, *(\w+|\d+) *, *" + \
+                    "(\w+|\d+) *, *([\"\']?\w+[\"\']?) *,? *([\"\']?\w*?[\"\']?) *\)"
         tk_oval =     'w_canvas.create_oval((%d,%d,%d,%d), width=%s, ' + \
                       'outline=%s, fill=%s)'
         tk_oval_var = '%s_x, %s_y = %s\n' + \
@@ -149,21 +149,21 @@ class Simplegui2Tkinter:
                 x1, x2 = (int(x) - int(r)), (int(x) + int(r))
                 y1, y2 = (int(y) - int(r)), (int(y) + int(r))
                 f = f if f else '""'
-                output_data = re.sub(r'\w+.draw_circle\([\[\(]%s, *%s[\]\)]' % (x, y) + \
-                                      '.+%s.+%s.+%s.*(?:%s.+)?\)' % (r, w, l, f), 
+                output_data = re.sub(r'\w+.draw_circle\( *%s.+' % re.escape(xy) + \
+                                      '%s.+%s.+%s.*(?:%s.+)?\)' % (r, w, l, f), 
                                      tk_oval % (x1, y1, x2, y2, w, l, f), output_data)
             
             # if position and/or radius is a variable
             else:
                 var, r, w, l, f = oval
-                name = re.findall(r'(\w+ ?= ?)\w+.draw_circle\(%s' % var + \
-                                   '.+%s.+%s.+%s.+(?:%s.+)?\)' % (r, w, l, f), output_data)
+                name = re.findall(r'(\w+ *= *)?\w+.draw_circle\( *%s' % var + \
+                                   '.+%s.+%s.+%s.*(?:%s.*)?\)' % (r, w, l, f), output_data)
                 name = name[0] if name else ''
-                space = re.findall(r'( *).+draw_circle\(%s' % var + \
-                                    '.+%s.+%s.+%s.+(?:%s.+)?\)' % (r, w, l, f), output_data)
+                space = re.findall(r'( *).+draw_circle\( *%s' % var + \
+                                    '.+%s.+%s.+%s.*(?:%s.*)?\)' % (r, w, l, f), output_data)
                 space = space[0] if space else ''
-                output_data = re.sub(r'(\w+ ?= ?)?\w+.draw_circle\(%s' % var + \
-                                      '.+%s.+%s.+%s.+(?:%s.+)?\)' % (r, w, l, f), 
+                output_data = re.sub(r'(\w+ *= *)?\w+.draw_circle\( *%s' % var + \
+                                      '.+%s.+%s.+%s.*(?:%s.*)?\)' % (r, w, l, f), 
                                      tk_oval_var % (var, var, var, 
                                                     space,var, r, 
                                                     space,var,var,var,var,var,var,
