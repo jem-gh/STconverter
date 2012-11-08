@@ -127,15 +127,15 @@ class Simplegui2Tkinter:
         
         # Oval
         sg_circle = ".draw_circle\((\w+|[\(\[\d, \)\]]+), " + \
-                    "*(\w+|\d+), *(\d+), *\"(\w+)\",? *\"?(\w+)?\"?\)"
+                    "*(\w+|\d+), *(\w+|\d+), *([\"\']?\w+[\"\']?),? *([\"\']?\w*?[\"\']?)\)"
         tk_oval =     'w_canvas.create_oval((%d,%d,%d,%d), width=%s, ' + \
-                      'outline="%s", fill="%s")'
+                      'outline=%s, fill=%s)'
         tk_oval_var = '%s_x, %s_y = %s\n' + \
                       '%s%s_r = %s\n' + \
                       '%s%s_x1, %s_x2 = (%s_x - %s_r), (%s_x + %s_r)\n' + \
                       '%s%s_y1, %s_y2 = (%s_y - %s_r), (%s_y + %s_r)\n' + \
                       '%s%sw_canvas.create_oval((%s_x1,%s_y1,%s_x2,%s_y2), width=%s, ' + \
-                      'outline="%s", fill="%s")'
+                      'outline=%s, fill=%s)'
         ovals = re.findall(r"%s" % sg_circle, output_data)
         
         for oval in ovals:
@@ -148,8 +148,9 @@ class Simplegui2Tkinter:
                 x, y = re.findall(r"\d+", xy)
                 x1, x2 = (int(x) - int(r)), (int(x) + int(r))
                 y1, y2 = (int(y) - int(r)), (int(y) + int(r))
+                f = f if f else '""'
                 output_data = re.sub(r'\w+.draw_circle\([\[\(]%s, *%s[\]\)]' % (x, y) + \
-                                      '.+%s.+%s.+%s.+(?:%s.+)?\)' % (r, w, l, f), 
+                                      '.+%s.+%s.+%s.*(?:%s.+)?\)' % (r, w, l, f), 
                                      tk_oval % (x1, y1, x2, y2, w, l, f), output_data)
             
             # if position and/or radius is a variable
