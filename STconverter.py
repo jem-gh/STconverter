@@ -69,7 +69,7 @@ class Simplegui2Tkinter:
         
         frame_widget = {
         "sg_frame":  "^(\w+) ?= ?simplegui.create_frame" + \
-                     "\((\".+\"), ?(\w+), ?(\w+),? *(\w+)?\)", 
+                     "\(([\"\'].+[\"\']), ?(\w+), ?(\w+),? *(\w+)?\)", 
         "tk_frame":  "window_root = Tkinter.Tk()\n" + \
                      "window_root.title(\\2)\n" + \
                      "\\1 = Tkinter.Frame(window_root)\n" + \
