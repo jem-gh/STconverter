@@ -180,13 +180,13 @@ class Simplegui2Tkinter:
         
         # Polygon
         sg_poly = "\w+.draw_polygon\( *(\[?[\[\(\w, \]\)]+?\]?) *, *" + \
-                  "(\w+) *, *[\"\']?(\w+)[\"\']?(?: *, *[\"\']?(\w+)[\"\']?)? *\)"
-        tk_poly = "w_canvas.create_polygon(%s, width=%s, outline='%s', " + \
-                  "fill='%s')"
+                  "(\w+) *, *([\"\']?\w+[\"\']?) *,? *([\"\']?\w*?[\"\']?) *\)"
+        tk_poly = "w_canvas.create_polygon(%s, width=%s, outline=%s, fill=%s)"
         polygons = re.findall(r"%s" % sg_poly, output_data)
-        for polygon in polygons:
-            output_data = re.sub('\w+.draw_polygon\( *%s.*?\s*?.*?\)' % re.escape(polygon[0]), 
-                                 tk_poly % (polygon), output_data)
+        for poly in polygons:
+            fill = poly[3] if poly[3] else '""'
+            output_data = re.sub('\w+.draw_polygon\( *%s.*?\s*?.*?\)' % re.escape(poly[0]), 
+                                 tk_poly % (poly[0], poly[1], poly[2], fill), output_data)
     
     
     def up_button(self):
