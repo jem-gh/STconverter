@@ -171,10 +171,8 @@ class Simplegui2Tkinter:
                                                     l, f), output_data)
         
         # Line
-        sg_line = "\w+.draw_line\([\[\(](\d+), (\d+)[\]\)], ?" + \
-                  "[\[\(](\d+), (\d+)[\]\)], (\d+), (\"\w+\")\)"
-        tk_line = "w_canvas.create_line((\\1, \\2, \\3, \\4), " + \
-                  "width=\\5, fill=\\6)"
+        sg_line = "\w+.draw_line\( *([\[\(\d, \]\)]+) *, *(\d+) *, *(\"\w+\") *\)"
+        tk_line = "w_canvas.create_line(\\1, width=\\2, fill=\\3)"
         LINE_RE = re.compile(r'%s' % sg_line)
         output_data = LINE_RE.sub(r'%s' % tk_line, output_data)
         
