@@ -356,8 +356,9 @@ class Simplegui2Tkinter:
         keys = re.findall(r"(\w+) ?== ?simplegui.KEY_MAP\[[\"\'](\w+)[\"\']\]", 
                           output_data)
         for key in keys:
+            keymap = key[1] if len(key[1]) == 1 else key[1].title()
             output_data = re.sub("%s ?== ?simplegui.KEY_MAP\[[\"\']%s[\"\']\]" % key, 
-                                 '%s.keysym == "%s"' % (key[0], key[1].title()),
+                                 '%s.keysym == "%s"' % (key[0], keymap),
                                  output_data)
     
     
