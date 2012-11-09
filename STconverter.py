@@ -207,7 +207,7 @@ class Simplegui2Tkinter:
         global output_data
         
         sg_label = "(\w+).add_label\((.*)\)" # all
-        sg_label_nv = "(\w+).add_label\(([\"\'].*[\"\'])\)" # no variable
+        sg_label_nv = "(\w+).add_label\(([\"\'].*[\"\']).*\)" # no variable
         sg_label_wv = "%s ?= ?%s.add_label\(%s\)" # with variable
         tk_label_nv = "Tkinter.Label(\\1, text=\\2).pack()"
         tk_label_wv = "%s_var = Tkinter.StringVar()\n" + \
