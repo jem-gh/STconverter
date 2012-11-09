@@ -111,7 +111,7 @@ class Simplegui2Tkinter:
                                     canvas_widget["tk_bg"] % bg_color), output_data)
         
         # replace "set_draw_handler" with drawing handler call
-        refresh_time = 66 # in ms (66ms~15fps; 33ms~30fps; 17ms~60fps)
+        refresh_time = 17 # in ms (66ms~15fps; 33ms~30fps; 17ms~60fps)
         
         dh_old = "\w+.set_draw_handler\(%s\)" % draw_handler
         dh_new = "def refresh_canvas():\n" + \
