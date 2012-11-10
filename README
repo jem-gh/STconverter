@@ -24,7 +24,7 @@
 1. REQUIREMENTS
 
 - Python & Tkinter: STconverter will need Python installed on your machine with 
-the Tkinter module to run correctly (generally installed by default with Python).
+the Tkinter module (generally installed by default with Python) to run correctly.
 http://www.python.org/download/
 
 - Playing music: if your SimpleGUI program plays music, you will need in addition 
@@ -33,14 +33,14 @@ http://www.pygame.org/download.shtml
 
 
 
-1. STconverter INSTALLATION
+2. STconverter INSTALLATION
 
-No installation of STconversion is required. Just download the STconverter.py file, 
+No installation of STconversion required. Just download the STconverter.py file, 
 and it's ready to use.
 
 
 
-2. HOW TO USE
+3. HOW TO USE
 
 On linux, you can start the program by clicking on the STconverter.py file or 
 by typing in terminal:
@@ -51,8 +51,8 @@ The GUI will then start.
 
 
 
-3. TESTED ON...
+4. TESTED ON...
 
-So far, it has only be tested on Linux Mint 13 with Python 2.7.3 and pygame 1.9.1
+So far, it has only be tested on Linux with Python 2.7.3 and pygame 1.9.1
 
 
