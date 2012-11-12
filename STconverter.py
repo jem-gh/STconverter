@@ -22,8 +22,10 @@
 ###############################################################################
 
 
-# global modules
+# import global modules
 import re
+import urllib2 # used by up_music()
+
 
 
 # global variables
@@ -50,6 +52,7 @@ class Simplegui2Tkinter:
         self.up_label()
         self.up_input()
         self.up_timer()
+        self.up_music()
         self.up_key()
         self.up_ini()
         self.up_color()
@@ -316,6 +319,64 @@ class Simplegui2Tkinter:
                 output_data = re.sub(sg_timer, tk_timer, output_data)
     
     
+    def up_music(self):
+        """ update music handler(s) to use pygame module. In case that several 
+            musics/sounds are used in the program, the largest music/sound file 
+            size will be played with the pygame music module, while others will 
+            be considered as sound and played with the sound module """
+        
+        global output_data
+        
+        if "simplegui.load_sound" in output_data:
+            
+            # add pygame (to play the music/sounds) and urllib (to retrieve 
+            # music/sounds files over internet) modules to the output data
+            output_data = re.sub("(import +.*Tkinter.*\n)", 
+                                 "\\1import pygame, urllib\n" + \
+                                 "pygame.mixer.init()\n", 
+                                 output_data)
+            
+            
+            # update the longest music/sound to use the pygame music module
+            
+            # find all musics/sounds
+            m_all = re.findall("(\w*) *=? *simplegui.load_sound\((.*)\)", output_data)
+            
+            # verify or find source path to each music/sound
+            for m in range(len(m_all)):
+                if m_all[m][1][0] not in ["'", '"']:
+                    m_all[m] = [m_all[m], re.findall("%s *= *[\"\'](.*)[\"\']" % 
+                                                     m_all[m][1], output_data)[0]]
+                else:
+                    m_all[m] = [m_all[m], m_all[m][1][1:-1]]
+            
+            # find longest playing musics/sounds (the largest file size)
+            for m in range(len(m_all)):
+                m_size = urllib2.urlopen(m_all[m][1]).info().getheaders("Content-Length")[0]
+                m_all[m][1] = m_size
+            
+            m_longest = max(y for (x, y) in enumerate(m_all))[0]
+            
+            # update music load, play, pause, rewind, volume
+            output_data = re.sub("%s *=? *simplegui.load_sound\(%s\)" % m_longest, 
+                                 "pygame.mixer.music.load(urllib.urlretrieve(%s)[0])" % 
+                                 m_longest[1], output_data)
+            output_data = re.sub("%s.play\(\)" % m_longest[0], 
+                                 "pygame.mixer.music.play()", output_data)
+            output_data = re.sub("%s.pause\(\)" % m_longest[0], 
+                                 "pygame.mixer.music.pause()", output_data)
+            output_data = re.sub("%s.rewind\(\)" % m_longest[0], 
+                                 "pygame.mixer.music.rewind()", output_data)
+            output_data = re.sub("%s.set_volume\((.*)\)" % m_longest[0], 
+                                 "pygame.mixer.music.set_volume(\\1)", output_data)
+            
+            
+            # update others musics/sounds to use the pygame sound module
+            output_data = re.sub("simplegui.load_sound\((.*)\)",
+                                 "pygame.mixer.Sound(urllib.urlretrieve(\\1)[0])",
+                                 output_data)
+    
+    
     def up_key(self):
         """ update event handlers involved when a key is pressed or released """
         
@@ -384,7 +445,7 @@ class Simplegui2Tkinter:
 
 ########## GUI of the application ##########
 
-# import modules
+# import modules for the GUI
 import Tkinter, tkFileDialog, tkMessageBox
 
 
