@@ -214,7 +214,8 @@ class Simplegui2Tkinter:
         sg_label_wv = "%s *= *%s.add_label\(%s\)" # with variable
         tk_label_nv = "Tkinter.Label(\\1, text=\\2).pack()"
         tk_label_wv = "%s_var = Tkinter.StringVar()\n" + \
-                      "%s = Tkinter.Label(%s, textvariable=%s_var).pack()\n"
+                      "%s = Tkinter.Label(%s, textvariable=%s_var).pack()\n" + \
+                      "%s_var.set(%s)"
         
         # find all labels in order to differentiate the one using text variable
         labels = re.findall(sg_label, output_data)
@@ -238,7 +239,8 @@ class Simplegui2Tkinter:
                 # update Label
                 output_data = re.sub(sg_label_wv % (label_name, label[0], re.escape(label[1])), 
                                      tk_label_wv % (label_name, label_name, label[0], 
-                                                    label_name), output_data)
+                                                    label_name, label_name, label[1]), 
+                                     output_data)
     
     
     def up_input(self):
