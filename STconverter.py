@@ -211,7 +211,7 @@ class Simplegui2Tkinter:
         
         sg_label = "(\w+).add_label\((.*)\)" # all
         sg_label_nv = "(\w+).add_label\(([\"\'].*[\"\']).*\)" # no variable
-        sg_label_wv = "%s ?= ?%s.add_label\(%s\)" # with variable
+        sg_label_wv = "%s *= *%s.add_label\(%s\)" # with variable
         tk_label_nv = "Tkinter.Label(\\1, text=\\2).pack()"
         tk_label_wv = "%s_var = Tkinter.StringVar()\n" + \
                       "%s = Tkinter.Label(%s, textvariable=%s_var).pack()\n"
@@ -221,22 +221,22 @@ class Simplegui2Tkinter:
         
         for label in labels:
             # not using text variable
-            if '"' in label[1] or "'" in label[1]:
+            if ('"' in label[1] or "'" in label[1]) and "+" not in label[1]:
                 output_data = re.sub(sg_label_nv, tk_label_nv, output_data)
             
             # using text variable
             else:
                 # get label name
-                label_name = re.findall(r"(\w+) ?= ?%s.add_label\(%s\)" % 
-                                        (label[0], label[1]), output_data)[0]
+                label_name = re.findall(r"(\w+) *= *%s.add_label\(%s\)" % 
+                                        (label[0], re.escape(label[1])), output_data)[0]
                 
                 # update setting message
-                output_data = re.sub(r"%s.set_text\(%s\)" % (label_name, label[1]), 
+                output_data = re.sub(r"%s.set_text\(%s\)" % (label_name, re.escape(label[1])), 
                                      r"%s_var.set(%s)" % (label_name, label[1]), 
                                      output_data)
                 
                 # update Label
-                output_data = re.sub(sg_label_wv % (label_name, label[0], label[1]), 
+                output_data = re.sub(sg_label_wv % (label_name, label[0], re.escape(label[1])), 
                                      tk_label_wv % (label_name, label_name, label[0], 
                                                     label_name), output_data)
     
