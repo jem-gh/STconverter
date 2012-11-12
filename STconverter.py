@@ -452,6 +452,10 @@ class Simplegui2Tkinter:
         
         global output_data
         
+        # if no frame, return
+        if "Tkinter.Frame" not in output_data:
+            return
+        
         frame_name = re.findall(r"(\w+) = Tkinter.Frame\(", output_data)
         START_RE = re.compile(r"{f}.start\(\)".format(f=frame_name[0]))
         output_data = START_RE.sub("", output_data)
