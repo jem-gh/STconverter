@@ -199,11 +199,31 @@ class Simplegui2Tkinter:
         
         global output_data
         
-        sg_button = "(?:\w+ ?= ?)?(\w+).add_button\((.+), ?(\w+), ?(\d+)\d\)([ #\w]*)"
-        tk_button = "\\3_bt = Tkinter.Button(\\1, text=\\2, command=\\3)\\5\n" \
-                    "\\3_bt.config(width=\\4)\n" \
-                    "\\3_bt.pack()\n"
-        output_data = re.sub(sg_button, tk_button, output_data)
+        sg_button = "(?:\w+ *= *)?(\w+).add_button\((.+?), *(\w+),? *(\d+)? *\)([ #\w]*)"
+        sg_b_ch =   "(?:\w+ *= *)?{f}.add_button\({m}, *{h},? *{s} *\)({r})"
+        tk_b_ws = "{h}_bt = Tkinter.Button({f}, text={m}, command={h}){r}\n" \
+                  "{h}_bt.config(width={s})\n" \
+                  "{h}_bt.pack()\n"
+        tk_b_ns = "{h}_bt = Tkinter.Button({f}, text={m}, command={h}){r}\n" \
+                  "{h}_bt.pack()\n"
+        
+        buttons = re.findall(sg_button, output_data)
+        
+        for button in buttons:
+            size = int(button[3]) / 10 if button[3] else ''
+            
+            if size:
+                output_data = re.sub(sg_b_ch.format(f=button[0], m=button[1], 
+                                       h=button[2], s=button[3], r=button[4]),
+                                     tk_b_ws.format(f=button[0], m=button[1], 
+                                       h=button[2], s=size, r=button[4]), 
+                                     output_data)
+            elif not size:
+                output_data = re.sub(sg_b_ch.format(f=button[0], m=button[1], 
+                                       h=button[2], s=button[3], r=button[4]),
+                                     tk_b_ns.format(f=button[0], m=button[1], 
+                                       h=button[2], r=button[4]), 
+                                     output_data)
     
     
     def up_label(self):
