@@ -54,6 +54,7 @@ class Simplegui2Tkinter:
         self.up_timer()
         self.up_music()
         self.up_key()
+        self.up_mouse()
         self.up_ini()
         self.up_color()
     
@@ -422,6 +423,27 @@ class Simplegui2Tkinter:
             keymap = key[1] if len(key[1]) == 1 else key[1].title()
             output_data = re.sub("%s ?== ?simplegui.KEY_MAP\[[\"\']%s[\"\']\]" % key, 
                                  '%s.keysym == "%s"' % (key[0], keymap),
+                                 output_data)
+    
+    
+    def up_mouse(self):
+        """ update mouse events """
+        
+        global output_data
+        
+        # mouse click
+        if "set_mouseclick_handler" in output_data:
+            # update function called by set_mouseclick_handler()
+            fn_name = re.findall("\w+.set_mouseclick_handler\( *(\w+) *\)", 
+                                 output_data)[0]
+            output_data = re.sub("( *)def %s\((\w+)\):\n" % fn_name,
+                                 "\\1def %s(\\2):\n" % fn_name + \
+                                 "\\1    \\2 = (\\2.x, \\2.y)\n",
+                                 output_data)
+            
+            # update mouse click event handler registration
+            output_data = re.sub("\w+.set_mouseclick_handler\((\w+)\)",
+                                 "w_canvas.bind('<Button-1>', \\1)\n",
                                  output_data)
     
     
