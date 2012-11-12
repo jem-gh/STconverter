@@ -61,7 +61,9 @@ class Simplegui2Tkinter:
     
     def up_module(self):
         """ update simplegui module to Tkinter """
+        
         global output_data
+        
         MODULE_RE = re.compile(r'^(import [\w ,]*)simplegui', re.MULTILINE)
         output_data = MODULE_RE.sub(r'\1Tkinter', input_data)
     
@@ -71,28 +73,23 @@ class Simplegui2Tkinter:
         
         global output_data
         
-        frame_widget = {
-        "sg_frame":  "^(\w+) ?= ?simplegui.create_frame" + \
-                     "\(([\"\'].+[\"\']), ?(\w+), ?(\w+),? *(\w+)?\)", 
-        "tk_frame":  "window_root = Tkinter.Tk()\n" + \
-                     "window_root.title(\\2)\n" + \
-                     "\\1 = Tkinter.Frame(window_root)\n" + \
-                     "\\1.pack()\n"}
-        canvas_widget = {
-        "tk_canvas": "w_canvas = Tkinter.Canvas(\\1, width=\\3, height=\\4)\n" + \
-                     "w_canvas.pack(side='right')\n", 
-        "sg_bg": "\w+.set_canvas_background\([\"\'](\w+)[\"\']\)", 
-        "tk_bg": "w_canvas.configure(background='%s')\n", 
-        "sg_txt": "\w+.draw_text\((.+), ?" + \
-                  "(\w+|[\[\(][\w ,]+[\]\)]), (\w+), ([\"\']?\w+[\"\']?)\)", 
-        "tk_txt": "w_canvas.create_text(\\2, anchor='sw', " + \
-                  "text=\\1, font=('DejaVu Serif Condensed', \\3), fill=\\4)"}
+        sg_frame = "^(\w+) *= *simplegui.create_frame" \
+                   "\(([\"\'].+[\"\']), *(\w+), *(\w+),? *(\w+)?\)"
+        tk_frame = "window_root = Tkinter.Tk()\n" \
+                   "window_root.title(\\2)\n" \
+                   "\\1 = Tkinter.Frame(window_root)\n" \
+                   "\\1.pack()\n"
+        tk_canvas = "w_canvas = Tkinter.Canvas(\\1, width=\\3, height=\\4)\n" \
+                    "w_canvas.pack(side='right')\n"
+        sg_bg = "\w+.set_canvas_background\([\"\'](\w+)[\"\']\)"
+        tk_bg = "w_canvas.configure(background='{}')\n"
         
-        FRAME_RE = re.compile(r'%s' % frame_widget["sg_frame"], re.MULTILINE)
+        FRAME_RE = re.compile(sg_frame, re.MULTILINE)
+        
         
         # if no need for Canvas widget, update only the Frame
         if "set_draw_handler" not in output_data:
-            output_data = FRAME_RE.sub(r'%s' % frame_widget["tk_frame"], output_data)
+            output_data = FRAME_RE.sub(tk_frame, output_data)
             return
         
         
@@ -101,46 +98,50 @@ class Simplegui2Tkinter:
                                   re.MULTILINE)[0]
         
         # update drawing handler
-        DH_RE = re.compile(r'^def (%s)\(\w+\):\n(\s+)' % draw_handler, re.MULTILINE)
+        DH_RE = re.compile(r'^def ({n})\(\w+\):\n(\s+)'.format(n=draw_handler), re.MULTILINE)
         output_data = DH_RE.sub(r'def \1():\n\2w_canvas.delete("all")\n\2\n\2', output_data)
         
         # create canvas with size used in "simplegui.create_frame"
         # and with a black background by default
         bg_color = "Black"
         if ".set_canvas_background" in output_data:
-            bg_color = re.findall(canvas_widget["sg_bg"], output_data)[0]
-            output_data = re.sub(canvas_widget["sg_bg"], '', output_data)
-        output_data = FRAME_RE.sub(r'%s\n%s' % (frame_widget["tk_frame"], 
-                                    canvas_widget["tk_canvas"] + \
-                                    canvas_widget["tk_bg"] % bg_color), output_data)
+            bg_color = re.findall(sg_bg, output_data)[0]
+            output_data = re.sub(sg_bg, '', output_data)
+        output_data = FRAME_RE.sub(r'{f}\n{c}{b}'.format(f=tk_frame, c=tk_canvas, 
+                                    b=tk_bg.format(bg_color)), output_data)
         
         # replace "set_draw_handler" with drawing handler call
         refresh_time = 17 # in ms (66ms~15fps; 33ms~30fps; 17ms~60fps)
         
-        dh_old = "\w+.set_draw_handler\(%s\)" % draw_handler
-        dh_new = "def refresh_canvas():\n" + \
-                 "    %s()\n" % draw_handler + \
-                 "    window_root.after(%d, refresh_canvas)\n\n" % refresh_time + \
-                 "refresh_canvas()\n"
+        dh_old = "\w+.set_draw_handler\({h}\)".format(h=draw_handler)
+        dh_new = "def refresh_canvas():\n" \
+                 "    {h}()\n" \
+                 "    window_root.after({t}, refresh_canvas)\n\n" \
+                 "refresh_canvas()\n".format(h=draw_handler, t=refresh_time)
         output_data = re.sub(dh_old, dh_new, output_data)
+        
         
         # update Canvas methods
         # Text
-        TXT_RE = re.compile(r'%s' % canvas_widget["sg_txt"], re.MULTILINE)
-        output_data = TXT_RE.sub(r'%s' % canvas_widget["tk_txt"], output_data)
+        sg_txt = "\w+.draw_text\((.+), ?" \
+                 "(\w+|[\[\(][\w ,]+[\]\)]), (\w+), ([\"\']?\w+[\"\']?)\)"
+        tk_txt = "w_canvas.create_text(\\2, anchor='sw', " \
+                 "text=\\1, font=('DejaVu Serif Condensed', \\3), fill=\\4)"
+        output_data = re.sub(sg_txt, tk_txt, output_data)
         
         # Oval
-        sg_circle = ".draw_circle\( *(\w+|[\(\[\d, \)\]]+) *, *(\w+|\d+) *, *" + \
+        sg_circle = ".draw_circle\( *(\w+|[\(\[\d, \)\]]+) *, *(\w+|\d+) *, *" \
                     "(\w+|\d+) *, *([\"\']?\w+[\"\']?) *,? *([\"\']?\w*?[\"\']?) *\)"
-        tk_oval =     'w_canvas.create_oval((%d,%d,%d,%d), width=%s, ' + \
-                      'outline=%s, fill=%s)'
-        tk_oval_var = '%s_x, %s_y = %s\n' + \
-                      '%s%s_r = %s\n' + \
-                      '%s%s_x1, %s_x2 = (%s_x - %s_r), (%s_x + %s_r)\n' + \
-                      '%s%s_y1, %s_y2 = (%s_y - %s_r), (%s_y + %s_r)\n' + \
-                      '%s%sw_canvas.create_oval((%s_x1,%s_y1,%s_x2,%s_y2), width=%s, ' + \
-                      'outline=%s, fill=%s)'
-        ovals = re.findall(r"%s" % sg_circle, output_data)
+        tk_oval =     'w_canvas.create_oval(({x1},{y1},{x2},{y2}), width={w}, ' \
+                      'outline={l}, fill={f})'
+        tk_oval_var = '{v}_x, {v}_y = {v}\n' \
+                      '{s}{v}_r = {r}\n' \
+                      '{s}{v}_x1, {v}_x2 = ({v}_x - {v}_r), ({v}_x + {v}_r)\n' \
+                      '{s}{v}_y1, {v}_y2 = ({v}_y - {v}_r), ({v}_y + {v}_r)\n' \
+                      '{s}{n}w_canvas.create_oval(({v}_x1,{v}_y1,{v}_x2,{v}_y2), width={w}, ' \
+                      'outline={l}, fill={f})'
+        
+        ovals = re.findall(sg_circle, output_data)
         
         for oval in ovals:
             is_pos_digit = not re.findall(r"[a-zA-Z]", oval[0])
@@ -153,56 +154,56 @@ class Simplegui2Tkinter:
                 x1, x2 = (int(x) - int(r)), (int(x) + int(r))
                 y1, y2 = (int(y) - int(r)), (int(y) + int(r))
                 f = f if f else '""'
-                output_data = re.sub(r'\w+.draw_circle\( *%s.+' % re.escape(xy) + \
-                                      '%s.+%s.+%s.*(?:%s.+)?\)' % (r, w, l, f), 
-                                     tk_oval % (x1, y1, x2, y2, w, l, f), output_data)
+                output_data = re.sub(r'\w+.draw_circle\( *{xy}.+{r}.+{w}.+{l}.*(?:{f}.+)?\)'.format(
+                                                 xy=re.escape(xy), r=r, w=w, l=l, f=f), 
+                                     tk_oval.format(x1=x1, y1=y1, x2=x2, y2=y2, w=w, l=l, f=f), 
+                                     output_data)
             
             # if position and/or radius is a variable
             else:
                 var, r, w, l, f = oval
-                name = re.findall(r'(\w+ *= *)?\w+.draw_circle\( *%s' % var + \
-                                   '.+%s.+%s.+%s.*(?:%s.*)?\)' % (r, w, l, f), output_data)
+                name = re.findall(r'(\w+ *= *)?\w+.draw_circle\( *{v}' \
+                                   '.+{r}.+{w}.+{l}.*(?:{f}.*)?\)'.format(
+                                    v=var, r=r, w=w, l=l, f=f), output_data)
                 name = name[0] if name else ''
-                space = re.findall(r'( *).+draw_circle\( *%s' % var + \
-                                    '.+%s.+%s.+%s.*(?:%s.*)?\)' % (r, w, l, f), output_data)
+                space = re.findall(r'( *).+draw_circle\( *{v}' \
+                                    '.+{r}.+{w}.+{l}.*(?:{f}.*)?\)'.format(
+                                    v=var, r=r, w=w, l=l, f=f), output_data)
                 space = space[0] if space else ''
-                output_data = re.sub(r'(\w+ *= *)?\w+.draw_circle\( *%s' % var + \
-                                      '.+%s.+%s.+%s.*(?:%s.*)?\)' % (r, w, l, f), 
-                                     tk_oval_var % (var, var, var, 
-                                                    space,var, r, 
-                                                    space,var,var,var,var,var,var,
-                                                    space,var,var,var,var,var,var,
-                                                    space,name,var,var,var,var, w,
-                                                    l, f), output_data)
+                output_data = re.sub(r'(\w+ *= *)?\w+.draw_circle\( *{v}' \
+                                      '.+{r}.+{w}.+{l}.*(?:{f}.*)?\)'.format(
+                                      v=var, r=r, w=w, l=l, f=f), 
+                                     tk_oval_var.format(v=var, s=space, n=name, r=r, w=w, l=l, f=f), 
+                                     output_data)
         
         # Line
-        sg_line = "\w+.draw_line\( *([\[\(\w, \*\-\+\/\]\)]+) *, *(\w+)" + \
+        sg_line = "\w+.draw_line\( *([\[\(\w, \*\-\+\/\]\)]+) *, *(\w+)" \
                   " *, *([\"\']?\w+[\"\']?) *\)"
         tk_line = "w_canvas.create_line(\\1, width=\\2, fill=\\3)"
-        LINE_RE = re.compile(r'%s' % sg_line)
-        output_data = LINE_RE.sub(r'%s' % tk_line, output_data)
+        output_data = re.sub(sg_line, tk_line, output_data)
         
         # Polygon
-        sg_poly = "\w+.draw_polygon\( *(\[?[\[\(\w, \]\)]+?\]?) *, *" + \
+        sg_poly = "\w+.draw_polygon\( *(\[?[\[\(\w, \]\)]+?\]?) *, *" \
                   "(\w+) *, *([\"\']?\w+[\"\']?) *,? *([\"\']?\w*?[\"\']?) *\)"
-        tk_poly = "w_canvas.create_polygon(%s, width=%s, outline=%s, fill=%s)"
-        polygons = re.findall(r"%s" % sg_poly, output_data)
+        tk_poly = "w_canvas.create_polygon({c}, width={w}, outline={o}, fill={f})"
+        polygons = re.findall(sg_poly, output_data)
         for poly in polygons:
             fill = poly[3] if poly[3] else '""'
-            output_data = re.sub('\w+.draw_polygon\( *%s.*?\s*?.*?\)' % re.escape(poly[0]), 
-                                 tk_poly % (poly[0], poly[1], poly[2], fill), output_data)
+            output_data = re.sub('\w+.draw_polygon\( *{}.*?\s*?.*?\)'.format(re.escape(poly[0])), 
+                                 tk_poly.format(c=poly[0], w=poly[1], o=poly[2], f=fill), 
+                                 output_data)
     
     
     def up_button(self):
         """ update Button widget(s) """
+        
         global output_data
-        button_widget = {
-        "sg_button": "(?:\w+ ?= ?)?(\w+).add_button\((.+), ?(\w+), ?(\d+)\d\)([ #\w]*)", 
-        "tk_button": "\\3_bt = Tkinter.Button(\\1, text=\\2, command=\\3)\\5\n" + \
-                     "\\3_bt.config(width=\\4)\n" + \
-                     "\\3_bt.pack()\n"}
-        BUTTON_RE = re.compile(r"%s" % button_widget["sg_button"], re.MULTILINE)
-        output_data = BUTTON_RE.sub(r"%s" % button_widget["tk_button"], output_data)
+        
+        sg_button = "(?:\w+ ?= ?)?(\w+).add_button\((.+), ?(\w+), ?(\d+)\d\)([ #\w]*)"
+        tk_button = "\\3_bt = Tkinter.Button(\\1, text=\\2, command=\\3)\\5\n" \
+                    "\\3_bt.config(width=\\4)\n" \
+                    "\\3_bt.pack()\n"
+        output_data = re.sub(sg_button, tk_button, output_data)
     
     
     def up_label(self):
@@ -210,13 +211,13 @@ class Simplegui2Tkinter:
         
         global output_data
         
-        sg_label = "(\w+).add_label\((.*)\)" # all
+        sg_label =    "(\w+).add_label\((.*)\)" # all with or without variable
         sg_label_nv = "(\w+).add_label\(([\"\'].*[\"\']).*\)" # no variable
-        sg_label_wv = "%s *= *%s.add_label\(%s\)" # with variable
+        sg_label_wv = "{n} *= *{f}.add_label\({v}\)" # with variable
         tk_label_nv = "Tkinter.Label(\\1, text=\\2).pack()"
-        tk_label_wv = "%s_var = Tkinter.StringVar()\n" + \
-                      "%s = Tkinter.Label(%s, textvariable=%s_var).pack()\n" + \
-                      "%s_var.set(%s)"
+        tk_label_wv = "{n}_var = Tkinter.StringVar()\n" \
+                      "{n} = Tkinter.Label({f}, textvariable={n}_var).pack()\n" \
+                      "{n}_var.set({v})"
         
         # find all labels in order to differentiate the one using text variable
         labels = re.findall(sg_label, output_data)
@@ -229,18 +230,17 @@ class Simplegui2Tkinter:
             # using text variable
             else:
                 # get label name
-                label_name = re.findall(r"(\w+) *= *%s.add_label\(%s\)" % 
-                                        (label[0], re.escape(label[1])), output_data)[0]
+                label_name = re.findall(r"(\w+) *= *{f}.add_label\({v}\)".format(
+                                        f=label[0], v=re.escape(label[1])), 
+                                        output_data)[0]
                 
                 # update setting message
-                output_data = re.sub(r"%s.set_text\(%s\)" % (label_name, re.escape(label[1])), 
-                                     r"%s_var.set(%s)" % (label_name, label[1]), 
-                                     output_data)
+                output_data = re.sub(r"{n}.set_text\({v}\)".format(n=label_name, v=re.escape(label[1])), 
+                                     r"{n}_var.set({v})".format(n=label_name, v=label[1]), output_data)
                 
                 # update Label
-                output_data = re.sub(sg_label_wv % (label_name, label[0], re.escape(label[1])), 
-                                     tk_label_wv % (label_name, label_name, label[0], 
-                                                    label_name, label_name, label[1]), 
+                output_data = re.sub(sg_label_wv.format(n=label_name, f=label[0], v=re.escape(label[1])), 
+                                     tk_label_wv.format(n=label_name, f=label[0], v=label[1]), 
                                      output_data)
     
     
@@ -253,9 +253,9 @@ class Simplegui2Tkinter:
             
             input_widget = {
             "input_name":    "\w+.add_input\(.+, ?(\w+), ?\d+\)", 
-            "param_name":    "^def %s\((\w+)\):", 
-            "handler":       "^def %s\(%s\):(?:\n .*)+[=( \-+*/]%s[) \-+*/\n]", 
-            "handler_param": "(?<=(?<!%s)[= \(\-+*/])%s(?=[ \)\-+*/\n])", 
+            "param_name":    "^def {n}\((\w+)\):", 
+            "handler":       "^def {n}\({p}\):(?:\n .*)+[=( \-+*/]{p}[) \-+*/\n]", 
+            "handler_param": "(?<=(?<!{i})[= \(\-+*/]){p}(?=[ \)\-+*/\n])", 
             "sg_input":      "(?:\w+ ?= ?)?(\w+).add_input\((.+), ?(\w+), ?(\d+)\d\)([ #\w]*)", 
             "tk_input":      "\\3_lb = Tkinter.Label(\\1, text=\\2)\\5\n" + \
                              "\\3_lb.pack()\n" + \
@@ -265,28 +265,26 @@ class Simplegui2Tkinter:
                              "\\3_et.pack()\n"}
             
             # retrieve all Input widgets and respective handler names
-            input_names = re.findall(r'%s' % input_widget["input_name"], output_data)
+            input_names = re.findall(input_widget["input_name"], output_data)
             
             for input_name in input_names:
                 # retrieve parameter name used in the Input handler
-                param_name = re.findall(input_widget["param_name"] % input_name, 
+                param_name = re.findall(input_widget["param_name"].format(n=input_name), 
                                         output_data, re.MULTILINE)[0]
                 
                 # find and update parameter in the Input handler
-                HANDLER_RE = re.compile(input_widget["handler"] % (input_name, 
-                                        param_name, param_name), re.MULTILINE)
+                HANDLER_RE = re.compile(input_widget["handler"].format(n=input_name, 
+                                        p=param_name), re.MULTILINE)
                 
                 handler_old = re.findall(HANDLER_RE, output_data)[0]
-                handler_new = re.sub(input_widget["handler_param"] % 
-                                     (input_name, param_name), 
-                                     "%s_et.get()" % input_name, handler_old)
+                handler_new = re.sub(input_widget["handler_param"].format(i=input_name, p=param_name), 
+                                     "{}_et.get()".format(input_name), handler_old)
                 
                 output_data = output_data.replace(handler_old, handler_new)
                 
                 ## write Tkinter GUI of the Input widget
-                INPUT_RE = re.compile(r'%s' % input_widget["sg_input"])
-                output_data = INPUT_RE.sub(r"%s" % input_widget["tk_input"], 
-                                           output_data)
+                INPUT_RE = re.compile(input_widget["sg_input"])
+                output_data = INPUT_RE.sub(input_widget["tk_input"], output_data)
     
     
     def up_timer(self):
@@ -301,24 +299,24 @@ class Simplegui2Tkinter:
             
             for timer_name in timer_names:
                 # update timer event handler
-                sg_timer_start = "%s.start\(\)" % timer_name
-                sg_timer_stop =  "%s.stop\(\)" % timer_name
-                tk_timer_start = "%s_st(True)" % timer_name
-                tk_timer_stop =  "%s_st(False)" % timer_name
+                sg_timer_start = "{n}\.start\(\)".format(n=timer_name)
+                sg_timer_stop =  "{n}\.stop\(\)".format(n=timer_name)
+                tk_timer_start = "{n}_st(True)".format(n=timer_name)
+                tk_timer_stop =  "{n}_st(False)".format(n=timer_name)
                 output_data = re.sub(sg_timer_start, tk_timer_start, output_data)
                 output_data = re.sub(sg_timer_stop, tk_timer_stop, output_data)
                 
                 # update timer
-                sg_timer = "%s ?= ?simplegui.create_timer\((\w+), (\w+)\)" % timer_name
-                tk_timer = "%s_status = False\n\n" % timer_name + \
-                           "def %s_st(status):\n" % timer_name + \
-                           "    global %s_status\n" % timer_name + \
-                           "    %s_status = status\n\n" % timer_name + \
-                           "def %s_fn():\n" % timer_name + \
-                           "    window_root.after(\\1, %s_fn)\n" % timer_name + \
-                           "    if %s_status:\n" % timer_name + \
-                           "        \\2()\n\n" + \
-                           "%s_fn()\n" % timer_name
+                sg_timer = "{n} *= *simplegui.create_timer\((\w+), *(\w+)\)".format(n=timer_name)
+                tk_timer = "{n}_status = False\n\n" \
+                           "def {n}_st(status):\n" \
+                           "    global {n}_status\n" \
+                           "    {n}_status = status\n\n" \
+                           "def {n}_fn():\n" \
+                           "    window_root.after(\\1, {n}_fn)\n" \
+                           "    if {n}_status:\n" \
+                           "        \\2()\n\n" \
+                           "{n}_fn()\n".format(n=timer_name)
                 output_data = re.sub(sg_timer, tk_timer, output_data)
     
     
@@ -348,8 +346,8 @@ class Simplegui2Tkinter:
             # verify or find source path to each music/sound
             for m in range(len(m_all)):
                 if m_all[m][1][0] not in ["'", '"']:
-                    m_all[m] = [m_all[m], re.findall("%s *= *[\"\'](.*)[\"\']" % 
-                                                     m_all[m][1], output_data)[0]]
+                    m_all[m] = [m_all[m], re.findall("{m} *= *[\"\'](.*)[\"\']".format(
+                                                      m=m_all[m][1]), output_data)[0]]
                 else:
                     m_all[m] = [m_all[m], m_all[m][1][1:-1]]
             
@@ -361,16 +359,16 @@ class Simplegui2Tkinter:
             m_longest = max(m_all, key=lambda music: int(music[1]))[0]
             
             # update music load, play, pause, rewind, volume
-            output_data = re.sub("%s *=? *simplegui.load_sound\(%s\)" % m_longest, 
-                                 "pygame.mixer.music.load(urllib.urlretrieve(%s)[0])" % 
-                                 m_longest[1], output_data)
-            output_data = re.sub("%s.play\(\)" % m_longest[0], 
+            output_data = re.sub("{n} *=? *simplegui.load_sound\(%s\)".format(n=m_longest), 
+                                 "pygame.mixer.music.load(urllib.urlretrieve({u})[0])".format(
+                                  u=m_longest[1]), output_data)
+            output_data = re.sub("{n}.play\(\)".format(n=m_longest[0]), 
                                  "pygame.mixer.music.play(-1, pygame.mixer.music.get_pos())", output_data)
-            output_data = re.sub("%s.pause\(\)" % m_longest[0], 
+            output_data = re.sub("{n}.pause\(\)".format(n=m_longest[0]), 
                                  "pygame.mixer.music.pause()", output_data)
-            output_data = re.sub("%s.rewind\(\)" % m_longest[0], 
+            output_data = re.sub("{n}.rewind\(\)".format(n=m_longest[0]), 
                                  "pygame.mixer.music.rewind()", output_data)
-            output_data = re.sub("%s.set_volume\((.*)\)" % m_longest[0], 
+            output_data = re.sub("{n}.set_volume\((.*)\)".format(n=m_longest[0]), 
                                  "pygame.mixer.music.set_volume(\\1)", output_data)
             
             
@@ -385,6 +383,7 @@ class Simplegui2Tkinter:
         
         global output_data
         
+        
         # event handler when a key is pressed
         
         # find function(s) called by event handler when a key is pressed
@@ -394,18 +393,18 @@ class Simplegui2Tkinter:
         # for each event handler, update event handler and associated function
         for eh_name in key_pressed_eh_names:
             # retrieve parameter name used by event handler
-            eh_param = re.findall(r"def %s\((\w+)\)" % eh_name, output_data)[0]
+            eh_param = re.findall(r"def {n}\((\w+)\)".format(n=eh_name), output_data)[0]
             # retrieve entire event handler to modify it
-            eh_old = re.findall("def %s\(\w+\):\n(?: {4}.+\n)+" % eh_name, 
+            eh_old = re.findall("def {n}\(\w+\):\n(?:    .+\n)+".format(n=eh_name), 
                                output_data)[0]
             # update the capturing of key event
-            eh_new = re.sub("chr\((%s)\)" % eh_param, "\\1.keysym", eh_old)
+            eh_new = re.sub("chr\(({p})\)".format(p=eh_param), "\\1.keysym", eh_old)
             # update output_data
             output_data = re.sub(re.escape(eh_old), eh_new, output_data)
             
             # update event handler
             output_data = re.sub(r"(\w+).set_keydown_handler\((\w+)\)", 
-                                 r'\1.bind("<Key>", \2)\n' + \
+                                 r'\1.bind("<Key>", \2)\n' \
                                   '\\1.focus_set()\n', 
                                  output_data)
         
@@ -414,6 +413,7 @@ class Simplegui2Tkinter:
                              r'\1.bind("<KeyRelease>", \2)\n',
                              output_data)
         
+        
         # update other key events
         
         # recognition of a specific pressed key
@@ -421,8 +421,8 @@ class Simplegui2Tkinter:
                           output_data)
         for key in keys:
             keymap = key[1] if len(key[1]) == 1 else key[1].title()
-            output_data = re.sub("%s ?== ?simplegui.KEY_MAP\[[\"\']%s[\"\']\]" % key, 
-                                 '%s.keysym == "%s"' % (key[0], keymap),
+            output_data = re.sub("{p} ?== ?simplegui.KEY_MAP\[[\"\']{k}[\"\']\]".format(p=key[0], k=key[1]), 
+                                 '{p}.keysym == "{k}"'.format(p=key[0], k=keymap),
                                  output_data)
     
     
@@ -436,9 +436,9 @@ class Simplegui2Tkinter:
             # update function called by set_mouseclick_handler()
             fn_name = re.findall("\w+.set_mouseclick_handler\( *(\w+) *\)", 
                                  output_data)[0]
-            output_data = re.sub("( *)def %s\((\w+)\):\n" % fn_name,
-                                 "\\1def %s(\\2):\n" % fn_name + \
-                                 "\\1    \\2 = (\\2.x, \\2.y)\n",
+            output_data = re.sub("( *)def {n}\((\w+)\):\n".format(n=fn_name),
+                                 "\\1def {n}(\\2):\n" \
+                                 "\\1    \\2 = (\\2.x, \\2.y)\n".format(n=fn_name),
                                  output_data)
             
             # update mouse click event handler registration
@@ -449,9 +449,11 @@ class Simplegui2Tkinter:
     
     def up_ini(self):
         """ update the initialization of the event loop """
+        
         global output_data
+        
         frame_name = re.findall(r"(\w+) = Tkinter.Frame\(", output_data)
-        START_RE = re.compile(r"^%s.start\(\)" % frame_name[0], re.MULTILINE)
+        START_RE = re.compile(r"{f}.start\(\)".format(f=frame_name[0]))
         output_data = START_RE.sub("", output_data)
         output_data = output_data + "\n\nwindow_root.mainloop()\n"
     
@@ -460,7 +462,9 @@ class Simplegui2Tkinter:
         """ some colors used to draw object in SimpleGUI canvas aren't 
             recognized by Tkinter ... try to find a color as close as 
             possible for the colors with known issue """
+        
         global output_data
+        
         output_data = re.sub(r"[\"\']Lime[\"\']", r"'Lime green'", output_data)
         output_data = re.sub(r"[\"\']Aqua[\"\']", r"'Cyan'", output_data)
 
