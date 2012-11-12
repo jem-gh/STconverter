@@ -364,7 +364,7 @@ class Simplegui2Tkinter:
                                  "pygame.mixer.music.load(urllib.urlretrieve(%s)[0])" % 
                                  m_longest[1], output_data)
             output_data = re.sub("%s.play\(\)" % m_longest[0], 
-                                 "pygame.mixer.music.play(0, pygame.mixer.music.get_pos())", output_data)
+                                 "pygame.mixer.music.play(-1, pygame.mixer.music.get_pos())", output_data)
             output_data = re.sub("%s.pause\(\)" % m_longest[0], 
                                  "pygame.mixer.music.pause()", output_data)
             output_data = re.sub("%s.rewind\(\)" % m_longest[0], 
