@@ -358,7 +358,7 @@ class Simplegui2Tkinter:
                 m_size = urllib2.urlopen(m_all[m][1]).info().getheaders("Content-Length")[0]
                 m_all[m][1] = m_size
             
-            m_longest = max(y for (x, y) in enumerate(m_all))[0]
+            m_longest = max(m_all, key=lambda music: int(music[1]))[0]
             
             # update music load, play, pause, rewind, volume
             output_data = re.sub("%s *=? *simplegui.load_sound\(%s\)" % m_longest, 
