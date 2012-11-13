@@ -380,7 +380,8 @@ class Simplegui2Tkinter:
             m_longest = max(m_all, key=lambda music: int(music[1]))[0]
             
             # update music load, play, pause, rewind, volume
-            output_data = re.sub("{n} *=? *simplegui.load_sound\(%s\)".format(n=m_longest), 
+            output_data = re.sub("{n} *=? *simplegui.load_sound\({u}\)".format(
+                                  n=m_longest[0], u=m_longest[1]), 
                                  "pygame.mixer.music.load(urllib.urlretrieve({u})[0])".format(
                                   u=m_longest[1]), output_data)
             output_data = re.sub("{n}.play\(\)".format(n=m_longest[0]), 
