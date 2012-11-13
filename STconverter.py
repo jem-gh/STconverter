@@ -142,7 +142,7 @@ class Simplegui2Tkinter:
                       'outline={l}, fill={f})'
         
         ovals = re.findall(sg_circle, output_data)
-        print ovals
+        
         for oval in ovals:
             is_pos_digit = not re.findall(r"[a-zA-Z]", oval[0])
             is_rad_digit = not re.findall(r"[a-zA-Z]", oval[1])
@@ -163,15 +163,16 @@ class Simplegui2Tkinter:
             else:
                 var, r, w, l, f = oval
                 name = re.findall(r'(\w+ *= *)?\w+.draw_circle\( *{v}' \
-                                   '.+{r}.+{w}.+{l}.*(?:{f}.*)?\)'.format(
+                                   '.+{r}.+{w}.+{l}.*(?:{f}.+)?\)'.format(
                                     v=var, r=r, w=w, l=l, f=f), output_data)
                 name = name[0] if name else ''
                 space = re.findall(r'( *).+draw_circle\( *{v}' \
-                                    '.+{r}.+{w}.+{l}.*(?:{f}.*)?\)'.format(
+                                    '.+{r}.+{w}.+{l}.*(?:{f}.+)?\)'.format(
                                     v=re.escape(var), r=r, w=w, l=l, f=f), output_data)
                 space = space[0] if space else ''
+                f = f if f else '""'
                 output_data = re.sub(r'(\w+ *= *)?\w+.draw_circle\( *{v}' \
-                                      '.+{r}.+{w}.+{l}.*(?:{f}.*)?\)'.format(
+                                      '.+{r}.+{w}.+{l}.*(?:{f}.+)?\)'.format(
                                       v=re.escape(var), r=r, w=w, l=l, f=f), 
                                      tk_oval_var.format(v=var, s=space, n=name, r=r, w=w, l=l, f=f), 
                                      output_data)
