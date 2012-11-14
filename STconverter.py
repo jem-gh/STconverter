@@ -463,9 +463,15 @@ class Simplegui2Tkinter:
             
             for image in images:
                 angle = image[6] if image[6] else 0
-                output_data = re.sub(sg_image, tk_image.format(s=image[0], 
-                                     n=image[1], sc=image[2], ss=image[3], 
-                                     dc=image[4], ds=image[5], a=angle), 
+                output_data = re.sub("{s}canvas.draw_image\( *{n} *,\s*" \
+                                     "{sc} *,\s*{ss} *,\s*{dc} *,\s*{ds} *,?\s*" \
+                                     "{a}? *\)".format(s=image[0], n=image[1], 
+                                     sc=re.escape(image[2]), ss=re.escape(image[3]), 
+                                     dc=re.escape(image[4]), ds=re.escape(image[5]), 
+                                     a=image[6]), 
+                                     tk_image.format(s=image[0], n=image[1], 
+                                     sc=image[2], ss=image[3], dc=image[4], 
+                                     ds=image[5], a=angle), 
                                      output_data)
     
     
