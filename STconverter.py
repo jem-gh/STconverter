@@ -53,6 +53,7 @@ class Simplegui2Tkinter:
         self.up_input()
         self.up_timer()
         self.up_music()
+        self.up_image()
         self.up_key()
         self.up_mouse()
         self.up_ini()
@@ -398,6 +399,74 @@ class Simplegui2Tkinter:
             output_data = re.sub("simplegui.load_sound\((.*)\)",
                                  "pygame.mixer.Sound(urllib.urlretrieve(\\1)[0])",
                                  output_data)
+    
+    
+    def up_image(self):
+        """ update images using the Python Imaging Library (PIL) with ImageTk """
+        
+        global output_data
+        
+        if "canvas.draw_image" in output_data:
+            
+            # add Python Imaging Library (PIL) (to process images) and urllib 
+            # (to retrieve images from Internet) if not yet available
+            
+            m_tk =  "(import +.*Tkinter.*\n)"
+            m_url = "(import +.*urllib.*\n)"
+            n_url = "\\1import urllib\n" \
+                    "from PIL import Image, ImageTk\n"
+            w_url = "\\1from PIL import Image, ImageTk\n"
+            
+            # function which will process all images in the converted file, and 
+            # return images Tkinter-compatible, with:
+            # img = source image retrieved from Internet 
+            # src_coor, src_size = coordinates (x, y) and size (width, height) 
+            #                      in pixels of a selection of the source image 
+            # dest_size = size (width, height) in pixels on the canvas of the 
+            #             selected part of the image 
+            # a = angle in radians of clockwise rotation around its center 
+            fn = "\ndef STconverter_image(img, src_coor, src_size, dest_size, a):\n" \
+                 "    x1, y1 = (src_coor[0]-src_size[0]/2), (src_coor[1]-src_size[1]/2)\n" \
+                 "    x2, y2 = (src_coor[0]+src_size[0]/2), (src_coor[1]+src_size[1]/2)\n" \
+                 "    image_croped = img.crop((x1, y1, x2, y2))\n" \
+                 "    image_resized = image_croped.resize(dest_size)\n" \
+                 "    image_rotated = image_resized.rotate(-a)\n" \
+                 "    return ImageTk.PhotoImage(image_rotated)\n\n"
+            
+            if "urllib" in output_data:
+                output_data = re.sub(m_url, w_url+fn, output_data)
+            else:
+                output_data = re.sub(m_tk, n_url+fn, output_data)
+            
+            
+            # update all images loading
+            output_data = re.sub("( *)(\w+) *=? *simplegui.load_image\((.*)\)", 
+                                 "\\1\\2 = Image.open(urllib.urlretrieve(\\3)[0])\n" \
+                                 "\\1\\2_displayed = ''", 
+                                 output_data)
+            
+            
+            # update all images drawing
+            sg_image = "( *)canvas.draw_image\( *(\w+) *,\s*" \
+                       "([\[\(\w\/\*\+\- ]+ *,? *[\w\/\*\+\- \]\)]*) *,\s*" \
+                       "([\[\(\w\/\*\+\- ]+ *,? *[\w\/\*\+\- \]\)]*) *,\s*" \
+                       "([\[\(\w\/\*\+\- ]+ *,? *[\w\/\*\+\- \]\)]*) *,\s*" \
+                       "([\[\(\w\/\*\+\- ]+ *,? *[\w\/\*\+\- \]\)]*) *,?\s*" \
+                       "([\[\(\w\/\*\+\- ,\]\)]+)? *\)"
+            
+            tk_image = "{s}global {n}_displayed\n" \
+                       "{s}{n}_params = ({n}, {sc}, {ss}, {ds}, {a})\n" \
+                       "{s}{n}_displayed = STconverter_image(*{n}_params)\n" \
+                       "{s}w_canvas.create_image({dc}, image={n}_displayed)\n"
+            
+            images = re.findall(sg_image, output_data)
+            
+            for image in images:
+                angle = image[6] if image[6] else 0
+                output_data = re.sub(sg_image, tk_image.format(s=image[0], 
+                                     n=image[1], sc=image[2], ss=image[3], 
+                                     dc=image[4], ds=image[5], a=angle), 
+                                     output_data)
     
     
     def up_key(self):
