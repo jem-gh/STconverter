@@ -1,14 +1,13 @@
 
 ###############################################################################
-# DISCLAIMER: STconverter is my first program, inspired by an introductory 
-# class I followed on interactive programming in Python, in order to get a 
-# deeper insight on Python programming, GUI, image processing, and music 
+# DISCLAIMER: STconverter is my first program. I started it in order to get a 
+# deeper insight on Python, and how to handle GUI, image processing, and music 
 ###############################################################################
 
 ###############################################################################
 # SimpleGUI/Tkinter Converter (STconverter.py) is a little software aiming to 
 # convert simple Python scripts written for SimpleGUI to work with Tkinter GUI 
-# module instead, and vice versa.
+# module instead (and in the future, vice versa).
 # 
 # "Tkinter is Python's de-facto standard GUI (Graphical User Interface) package"
 # (http://wiki.python.org/moin/TkInter)
@@ -18,8 +17,8 @@
 # online Coursera course "An Introduction to Interactive Programming in Python" 
 # by Joe Warren, Scott Rixner, John Greiner, and Stephen Wong (Rice University) 
 # 
-# For latest version of SimpleGUI/Tkinter Converter or detailed changelog, visit 
-# the repository on Github: 
+# For the latest version of SimpleGUI/Tkinter Converter or detailed changelog, 
+# visit the repository on Github: 
 # https://github.com/jem-gh/STconverter
 # 
 # STconverter is developed by Jean-Etienne Morlighem
@@ -65,10 +64,11 @@ The GUI will then start.
 
 
 
-4. TESTED ON...
+4. TESTED ON... AND KNOWN ISSUES
 
-So far, it has only be tested on Linux with Python 2.7.3 and pygame 1.9.1
+So far, it has been tested on:
+- Linux with Python 2.7.3, pygame 1.9.1, and PIL 1.1.7
 
-Unfortunately, won't work with Python 3 if your program uses images as it 
-requires the Python Imaging Library (PIL).
+Unfortunately, the converted program won't work with Python 3 if it uses 
+images, as it requires the Python Imaging Library (PIL).
 
