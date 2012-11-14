@@ -1,5 +1,11 @@
 
 ###############################################################################
+# DISCLAIMER: STconverter is my first program, inspired by an introductory 
+# class I followed on interactive programming in Python, in order to get a 
+# deeper insight on Python programming, GUI, image processing, and music 
+###############################################################################
+
+###############################################################################
 # SimpleGUI/Tkinter Converter (STconverter.py) is a little software aiming to 
 # convert simple Python scripts written for SimpleGUI to work with Tkinter GUI 
 # module instead, and vice versa.
@@ -16,7 +22,7 @@
 # the repository on Github: 
 # https://github.com/jem-gh/STconverter
 # 
-# SimpleGUI/Tkinter Converter is developed by Jean-Etienne Morlighem
+# STconverter is developed by Jean-Etienne Morlighem
 ###############################################################################
 
 
@@ -27,9 +33,17 @@
 the Tkinter module (generally installed by default with Python) to run correctly.
 http://www.python.org/download/
 
-- Playing music: if your SimpleGUI program plays music, you will need in addition 
-to have pygame installed on your machine.
+- Music: if your SimpleGUI program plays music, you will need in addition to have 
+pygame installed on your machine to run your program (but is not required for the 
+conversion)
 http://www.pygame.org/download.shtml
+
+- Image: if your SimpleGUI program displays images, you will need in addition to 
+have the Python Imaging Library (PIL) with the ImageTk module installed on your 
+machine to run your program (but are not required for the conversion).
+Unfortunately, so far, PIL is not available for Python 3 and works only for 
+Python 2.2 to 2.7.
+http://www.pythonware.com/products/pil/index.htm
 
 
 
@@ -55,4 +69,6 @@ The GUI will then start.
 
 So far, it has only be tested on Linux with Python 2.7.3 and pygame 1.9.1
 
+Unfortunately, won't work with Python 3 if your program uses images as it 
+requires the Python Imaging Library (PIL).
 
