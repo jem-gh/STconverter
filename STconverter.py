@@ -25,6 +25,7 @@
 # import global modules
 import re
 import urllib2 # used by up_music()
+import random # used by up_image()
 
 
 
@@ -442,7 +443,7 @@ class Simplegui2Tkinter:
             # update all images loading
             output_data = re.sub("( *)(\w+) *=? *simplegui.load_image\((.*)\)", 
                                  "\\1\\2 = Image.open(urllib.urlretrieve(\\3)[0])\n" \
-                                 "\\1\\2_displayed = ''", 
+                                 "\\1\\2_displayed = ''\n", 
                                  output_data)
             
             
@@ -455,23 +456,42 @@ class Simplegui2Tkinter:
                        "([\[\(\w\/\*\+\- ,\]\)]+)? *\)"
             
             tk_image = "{s}global {n}_displayed\n" \
-                       "{s}{n}_params = ({n}, {sc}, {ss}, {ds}, {a})\n" \
+                       "{s}{n}_params = ({i}, {sc}, {ss}, {ds}, {a})\n" \
                        "{s}{n}_displayed = STconverter_image(*{n}_params)\n" \
                        "{s}w_canvas.create_image({dc}, image={n}_displayed)\n"
             
             images = re.findall(sg_image, output_data)
             
+            used_once = []
+            
             for image in images:
+                # check angle
                 angle = image[6] if image[6] else 0
+                
+                # check if the image name is already used (when the same image 
+                # is used for several displays
+                if image[1] not in used_once:
+                    used_once.append(image[1])
+                    name = image[1]
+                else:
+                    # give a new name
+                    extension = ''.join(random.sample("abcdefghij0123456789", 6))
+                    name = image[1] + extension
+                    # add a global variable
+                    output_data = re.sub("( *)({i}_displayed = ''\n)".format(i=image[1]), 
+                                         "\\1\\2" \
+                                         "\\1{n}_displayed = ''\n".format(n=name),
+                                         output_data)
+                
                 output_data = re.sub("{s}canvas.draw_image\( *{n} *,\s*" \
                                      "{sc} *,\s*{ss} *,\s*{dc} *,\s*{ds} *,?\s*" \
                                      "{a}? *\)".format(s=image[0], n=image[1], 
                                      sc=re.escape(image[2]), ss=re.escape(image[3]), 
                                      dc=re.escape(image[4]), ds=re.escape(image[5]), 
                                      a=image[6]), 
-                                     tk_image.format(s=image[0], n=image[1], 
-                                     sc=image[2], ss=image[3], dc=image[4], 
-                                     ds=image[5], a=angle), 
+                                     tk_image.format(s=image[0], n=name, 
+                                     i=image[1], sc=image[2], ss=image[3], 
+                                     dc=image[4], ds=image[5], a=angle), 
                                      output_data)
     
     
