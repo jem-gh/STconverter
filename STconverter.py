@@ -234,10 +234,9 @@ class Simplegui2Tkinter:
         
         global output_data
         
-        sg_label =    "(\w+).add_label\((.*)\)" # all with or without variable
-        sg_label_nv = "(\w+).add_label\(([\"\'].*[\"\']).*\)" # no variable
-        sg_label_wv = "{n} *= *{f}.add_label\({v}\)" # with variable
-        tk_label_nv = "Tkinter.Label(\\1, text=\\2).pack()"
+        sg_label =    "(\w*?) *=? *(\w+).add_label\((.*)\)" # to retrieve params
+        sg_label_r  = "{n} *=? *{f}.add_label\({v}\)" # to update
+        tk_label_nv = "Tkinter.Label({f}, text={v}).pack()"
         tk_label_wv = "{n}_var = Tkinter.StringVar()\n" \
                       "{n} = Tkinter.Label({f}, textvariable={n}_var).pack()\n" \
                       "{n}_var.set({v})"
@@ -245,25 +244,22 @@ class Simplegui2Tkinter:
         # find all labels in order to differentiate the one using text variable
         labels = re.findall(sg_label, output_data)
         
-        for label in labels:
+        for l in labels:
             # not using text variable
-            if ('"' in label[1] or "'" in label[1]) and "+" not in label[1]:
-                output_data = re.sub(sg_label_nv, tk_label_nv, output_data)
+            if ("\n{n}.set_text".format(n=l[0]) and " {n}.set_text".format(n=l[0]))not in output_data:
+                output_data = re.sub(sg_label_r.format(n=l[0], f=l[1], v=l[2]), 
+                                     tk_label_nv.format(f=l[1], v=l[2]), 
+                                     output_data)
             
             # using text variable
             else:
-                # get label name
-                label_name = re.findall(r"(\w+) *= *{f}.add_label\({v}\)".format(
-                                        f=label[0], v=re.escape(label[1])), 
-                                        output_data)[0]
-                
                 # update setting message
-                output_data = re.sub(r"{n}.set_text\({v}\)".format(n=label_name, v=re.escape(label[1])), 
-                                     r"{n}_var.set({v})".format(n=label_name, v=label[1]), output_data)
+                output_data = re.sub(r"{n}.set_text\(".format(n=l[0]), 
+                                     r"{n}_var.set(".format(n=l[0]), output_data)
                 
                 # update Label
-                output_data = re.sub(sg_label_wv.format(n=label_name, f=label[0], v=re.escape(label[1])), 
-                                     tk_label_wv.format(n=label_name, f=label[0], v=label[1]), 
+                output_data = re.sub(sg_label_r.format(n=l[0], f=l[1], v=re.escape(l[2])), 
+                                     tk_label_wv.format(n=l[0], f=l[1], v=l[2]), 
                                      output_data)
     
     
