@@ -186,7 +186,7 @@ class Simplegui2Tkinter:
         output_data = re.sub(sg_line, tk_line, output_data)
         
         # Polygon
-        sg_poly = "\w+.draw_polygon\( *(\[?[\[\(\w, \]\)]+?\]?) *, *" \
+        sg_poly = "\w+.draw_polygon\( *(\[?[\[\(\w, \+\-\*\/\]\)]+?\]?) *, *" \
                   "(\w+) *, *([\"\']?\w+[\"\']?) *,? *([\"\']?\w*?[\"\']?) *\)"
         tk_poly = "w_canvas.create_polygon({c}, width={w}, outline={o}, fill={f})"
         polygons = re.findall(sg_poly, output_data)
