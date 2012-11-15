@@ -62,12 +62,18 @@ class Simplegui2Tkinter:
     
     
     def up_module(self):
-        """ update simplegui module to Tkinter """
+        """ update simplegui module to Tkinter and add division from future """
         
         global output_data
         
+        # update simplegui module to Tkinter
         MODULE_RE = re.compile(r'^(import [\w ,]*)simplegui', re.MULTILINE)
         output_data = MODULE_RE.sub(r'\1Tkinter', input_data)
+        
+        # add division from future to enable true division in Python 2.7
+        output_data = re.sub("^((?:\s|(?:#.*\n))*)", 
+                             "\\1\n\nfrom __future__ import division\n\n", 
+                             output_data)
     
     
     def up_frame_canvas(self):
