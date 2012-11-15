@@ -247,14 +247,12 @@ class Simplegui2Tkinter:
         for l in labels:
             # not using text variable
             if ("\n{n}.set_text".format(n=l[0]) and " {n}.set_text".format(n=l[0])) not in output_data:
-                print "if", l #################################################
                 output_data = re.sub(sg_label_r.format(n=l[0], f=l[1], v=l[2]), 
                                      tk_label_nv.format(f=l[1], v=l[2]), 
                                      output_data)
             
             # using text variable
             else:
-                print "else", l ###############################################
                 # update setting message
                 output_data = re.sub(r"([\n ]){n}.set_text\(".format(n=l[0]), 
                                      r"\1{n}_var.set(".format(n=l[0]), output_data)
