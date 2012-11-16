@@ -194,9 +194,10 @@ class Simplegui2Tkinter:
         
         # Polygon
         sg_poly = "(\w+).draw_polygon\( *(\[?[\[\(\w, \+\-\*\/\]\)]+?\]?) *, *" \
-                  "(\w+) *, *([\"\']?\w+[\"\']?) *,? *([\"\']?\w*?[\"\']?) *\)"
+                  "(\w+) *, *([\"\'\[\w\]]+) *,? *([\"\'\[\w\]]*?) *\)"
         tk_poly = "{n}.create_polygon({c}, width={w}, outline={o}, fill={f})"
         polygons = re.findall(sg_poly, output_data)
+        print polygons ########################################################
         for poly in polygons:
             fill = poly[4] if poly[4] else '""'
             output_data = re.sub('{n}.draw_polygon\( *{a}.*?\s*?.*?\)'.format(n=poly[0], a=re.escape(poly[1])), 
