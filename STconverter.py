@@ -82,14 +82,14 @@ class Simplegui2Tkinter:
         global output_data
         
         sg_frame = "^(\w+) *= *simplegui.create_frame\((\w+|[\"\'].+[\"\']), *" \
-                   "([\w \/\-\+\*]+), *([\w \/\-\+\*]+),? *([\w \/\-\+\*]+)? *\)"
+                   "([\w \/\-\+\*\[\]]+), *([\w \/\-\+\*\[\]]+),? *([\w \/\-\+\*\[\]]+)? *\)"
         tk_frame = "window_root = Tkinter.Tk()\n" \
                    "window_root.title(\\2)\n" \
                    "\\1 = Tkinter.Frame(window_root)\n" \
                    "\\1.pack()\n"
         tk_canvas = "canvas = Tkinter.Canvas(\\1, width=\\3, height=\\4)\n" \
                     "canvas.pack(side='right')\n"
-        sg_bg = "\w+.set_canvas_background\([\"\'](\w+)[\"\']\)"
+        sg_bg = "\w+.set_canvas_background\([\"\'](.+)[\"\']\)"
         tk_bg = "canvas.configure(background='{}')\n"
         
         FRAME_RE = re.compile(sg_frame, re.MULTILINE)
