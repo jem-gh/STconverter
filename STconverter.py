@@ -87,10 +87,10 @@ class Simplegui2Tkinter:
                    "window_root.title(\\2)\n" \
                    "\\1 = Tkinter.Frame(window_root)\n" \
                    "\\1.pack()\n"
-        tk_canvas = "w_canvas = Tkinter.Canvas(\\1, width=\\3, height=\\4)\n" \
-                    "w_canvas.pack(side='right')\n"
+        tk_canvas = "canvas = Tkinter.Canvas(\\1, width=\\3, height=\\4)\n" \
+                    "canvas.pack(side='right')\n"
         sg_bg = "\w+.set_canvas_background\([\"\'](\w+)[\"\']\)"
-        tk_bg = "w_canvas.configure(background='{}')\n"
+        tk_bg = "canvas.configure(background='{}')\n"
         
         FRAME_RE = re.compile(sg_frame, re.MULTILINE)
         
@@ -106,8 +106,8 @@ class Simplegui2Tkinter:
                                   re.MULTILINE)[0]
         
         # update drawing handler
-        DH_RE = re.compile(r'^def ({n})\(\w+\):\n(\s+)'.format(n=draw_handler), re.MULTILINE)
-        output_data = DH_RE.sub(r'def \1():\n\2w_canvas.delete("all")\n\2\n\2', output_data)
+        DH_RE = re.compile(r'( *)def ({n})\((\w+)\):\n(\s+)'.format(n=draw_handler))
+        output_data = DH_RE.sub(r'\1def \2(\3):\n\4\3.delete("all")\n\4\n\4', output_data)
         
         # create canvas with size used in "simplegui.create_frame"
         # and with a black background by default
@@ -123,7 +123,7 @@ class Simplegui2Tkinter:
         
         dh_old = "\w+.set_draw_handler\({h}\)".format(h=draw_handler)
         dh_new = "def refresh_canvas():\n" \
-                 "    {h}()\n" \
+                 "    {h}(canvas)\n" \
                  "    window_root.after({t}, refresh_canvas)\n\n" \
                  "refresh_canvas()\n".format(h=draw_handler, t=refresh_time)
         output_data = re.sub(dh_old, dh_new, output_data)
@@ -131,75 +131,76 @@ class Simplegui2Tkinter:
         
         # update Canvas methods
         # Text
-        sg_txt = "\w+.draw_text\((.+), ?" \
+        sg_txt = "(\w+).draw_text\((.+), ?" \
                  "(\w+|[\[\(][\w \+\-\*\/,]+[\]\)]), (\w+), ([\"\']?\w+[\"\']?)\)"
-        tk_txt = "w_canvas.create_text(\\2, anchor='sw', " \
-                 "text=\\1, font=('DejaVu Serif Condensed', \\3), fill=\\4)"
+        tk_txt = "\\1.create_text(\\3, anchor='sw', " \
+                 "text=\\2, font=('DejaVu Serif Condensed', \\4), fill=\\5)"
         output_data = re.sub(sg_txt, tk_txt, output_data)
         
         # Oval
-        sg_circle = ".draw_circle\( *(\w+|[\(\[\w, \)\]]+) *, *(\w+|\d+) *, *" \
+        sg_circle = "(\w+).draw_circle\( *(\w+|[\(\[\w, \)\]]+) *, *(\w+|\d+) *, *" \
                     "(\w+|\d+) *, *([\"\']?\w+[\"\']?) *,? *([\"\'\[\(\w\"\'\]\)]+)? *\)"
-        tk_oval =     'w_canvas.create_oval(({x1},{y1},{x2},{y2}), width={w}, ' \
+        tk_oval =     '{c}.create_oval(({x1},{y1},{x2},{y2}), width={w}, ' \
                       'outline={l}, fill={f})'
         tk_oval_var = 't_x, t_y = {v}\n' \
                       '{s}t_r = {r}\n' \
                       '{s}t_x1, t_x2 = (t_x - t_r), (t_x + t_r)\n' \
                       '{s}t_y1, t_y2 = (t_y - t_r), (t_y + t_r)\n' \
-                      '{s}{n}w_canvas.create_oval((t_x1,t_y1,t_x2,t_y2), width={w}, ' \
+                      '{s}{n}{c}.create_oval((t_x1,t_y1,t_x2,t_y2), width={w}, ' \
                       'outline={l}, fill={f})'
         
         ovals = re.findall(sg_circle, output_data)
         
         for oval in ovals:
-            is_pos_digit = not re.findall(r"[a-zA-Z]", oval[0])
-            is_rad_digit = not re.findall(r"[a-zA-Z]", oval[1])
+            is_pos_digit = not re.findall(r"[a-zA-Z]", oval[1])
+            is_rad_digit = not re.findall(r"[a-zA-Z]", oval[2])
             
             # if position and radius use digit
             if is_pos_digit and is_rad_digit:
-                xy, r, w, l, f = oval
+                c, xy, r, w, l, f = oval
                 x, y = re.findall(r"\d+", xy)
                 x1, x2 = (int(x) - int(r)), (int(x) + int(r))
                 y1, y2 = (int(y) - int(r)), (int(y) + int(r))
                 f = f if f else '""'
-                output_data = re.sub(r'\w+.draw_circle\( *{xy}.+{r}.+{w}.+{l}.*(?:{f}.+)?\)'.format(
-                                                 xy=re.escape(xy), r=r, w=w, l=l, f=f), 
-                                     tk_oval.format(x1=x1, y1=y1, x2=x2, y2=y2, w=w, l=l, f=f), 
+                output_data = re.sub(r'{c}.draw_circle\( *{xy}.+{r}.+{w}.+{l}.*(?:{f}.+)?\)'.format(
+                                                 c=c, xy=re.escape(xy), r=r, w=w, l=l, f=f), 
+                                     tk_oval.format(c=c, x1=x1, y1=y1, x2=x2, y2=y2, w=w, l=l, f=f), 
                                      output_data)
             
             # if position and/or radius is a variable
             else:
-                var, r, w, l, f = oval
-                name = re.findall(r'(\w+ *= *)?\w+.draw_circle\( *{v}' \
+                c, var, r, w, l, f = oval
+                name = re.findall(r'(\w+ *= *)?{c}.draw_circle\( *{v}' \
                                    '.+{r}.+{w}.+{l}.*(?:{f}.+)?\)'.format(
-                                    v=var, r=r, w=w, l=l, f=f), output_data)
+                                    c=c, v=var, r=r, w=w, l=l, f=f), output_data)
                 name = name[0] if name else ''
-                space = re.findall(r'( *).+draw_circle\( *{v}' \
+                space = re.findall(r'( *){n}{c}.draw_circle\( *{v}' \
                                     '.+{r}.+{w}.+{l}.*(?:{f}.+)?\)'.format(
-                                    v=re.escape(var), r=r, w=w, l=l, f=f), output_data)
+                                    n=name, c=c, v=re.escape(var), r=r, w=w, l=l, f=f), 
+                                   output_data)
                 space = space[0] if space else ''
                 f = f if f else '""'
-                output_data = re.sub(r'(\w+ *= *)?\w+.draw_circle\( *{v}' \
+                output_data = re.sub(r'{n}{c}.draw_circle\( *{v}' \
                                       '.+{r}.+{w}.+{l}.*(?:{f}.+)?\)'.format(
-                                      v=re.escape(var), r=r, w=w, l=l, f=f), 
-                                     tk_oval_var.format(v=var, s=space, n=name, r=r, w=w, l=l, f=f), 
+                                      n=name, c=c, v=re.escape(var), r=r, w=w, l=l, f=f), 
+                                     tk_oval_var.format(v=var, s=space, n=name, c=c, r=r, w=w, l=l, f=f), 
                                      output_data)
         
         # Line
-        sg_line = "\w+.draw_line\( *([\[\(\w, \*\-\+\/\]\)]+) *, *(\w+)" \
+        sg_line = "(\w+).draw_line\( *([\[\(\w, \*\-\+\/\]\)]+) *, *(\w+)" \
                   " *, *([\"\']?\w+[\"\']?) *\)"
-        tk_line = "w_canvas.create_line(\\1, width=\\2, fill=\\3)"
+        tk_line = "\\1.create_line(\\2, width=\\3, fill=\\4)"
         output_data = re.sub(sg_line, tk_line, output_data)
         
         # Polygon
-        sg_poly = "\w+.draw_polygon\( *(\[?[\[\(\w, \+\-\*\/\]\)]+?\]?) *, *" \
+        sg_poly = "(\w+).draw_polygon\( *(\[?[\[\(\w, \+\-\*\/\]\)]+?\]?) *, *" \
                   "(\w+) *, *([\"\']?\w+[\"\']?) *,? *([\"\']?\w*?[\"\']?) *\)"
-        tk_poly = "w_canvas.create_polygon({c}, width={w}, outline={o}, fill={f})"
+        tk_poly = "{n}.create_polygon({c}, width={w}, outline={o}, fill={f})"
         polygons = re.findall(sg_poly, output_data)
         for poly in polygons:
-            fill = poly[3] if poly[3] else '""'
-            output_data = re.sub('\w+.draw_polygon\( *{}.*?\s*?.*?\)'.format(re.escape(poly[0])), 
-                                 tk_poly.format(c=poly[0], w=poly[1], o=poly[2], f=fill), 
+            fill = poly[4] if poly[4] else '""'
+            output_data = re.sub('{n}.draw_polygon\( *{a}.*?\s*?.*?\)'.format(n=poly[0], a=re.escape(poly[1])), 
+                                 tk_poly.format(n=poly[0], c=poly[1], w=poly[2], o=poly[3], f=fill), 
                                  output_data)
     
     
