@@ -192,14 +192,16 @@ class Simplegui2Tkinter:
         output_data = re.sub(sg_line, tk_line, output_data)
         
         # Polygon
-        sg_poly = "(\w+).draw_polygon\( *(\[?[\[\(\w, \+\-\*\/\]\)]+?\]?) *, *" \
-                  "(\w+) *, *([\"\'\[\w\]]+) *,? *([\"\'\[\w\]]*?) *\)"
+        sg_poly = "(\w+).draw_polygon\( *(\[?[\[\(\w,\s\+\-\*\/\]\)\\\\]+?\]?) *,[\s\\\]*" \
+                  "(\w+) *,[\s\\\]*([\"\'\[\w\]]+) *,?[\s\\\]*([\"\'\[\w\]]*?) *\)"
         tk_poly = "{n}.create_polygon({c}, width={w}, outline={o}, fill={f})"
         polygons = re.findall(sg_poly, output_data)
-        for poly in polygons:
-            fill = poly[4] if poly[4] else '""'
-            output_data = re.sub('{n}.draw_polygon\( *{a}.*?\s*?.*?\)'.format(n=poly[0], a=re.escape(poly[1])), 
-                                 tk_poly.format(n=poly[0], c=poly[1], w=poly[2], o=poly[3], f=fill), 
+        for p in polygons:
+            fill = p[4] if p[4] else '""'
+            output_data = re.sub('{n}.draw_polygon\( *{a} *,[\s\\\]*{w} *,[\s\\\]*{c} *,?[\s\\\]*{f} *\)'.format(
+                                 n=p[0], a=re.escape(p[1]), w=re.escape(p[2]), 
+                                 c=re.escape(p[3]), f=re.escape(p[4])), 
+                                 tk_poly.format(n=p[0], c=p[1], w=p[2], o=p[3], f=fill), 
                                  output_data)
     
     
