@@ -563,7 +563,7 @@ class Simplegui2Tkinter:
             
             # update mouse click event handler registration
             output_data = re.sub("\w+.set_mouseclick_handler\((\w+)\)",
-                                 "w_canvas.bind('<Button-1>', \\1)\n",
+                                 "canvas.bind('<Button-1>', \\1)\n",
                                  output_data)
     
     
