@@ -102,8 +102,7 @@ class Simplegui2Tkinter:
         
         
         # find name of drawing handler
-        draw_handler = re.findall(r'^\w+.set_draw_handler\((.+)\)', output_data, 
-                                  re.MULTILINE)[0]
+        draw_handler = re.findall(r'\w+.set_draw_handler\((.+)\)', output_data)[0]
         
         # update drawing handler
         DH_RE = re.compile(r'( *)def ({n})\((\w+)\): *\n(\s+)'.format(n=draw_handler))
