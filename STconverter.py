@@ -412,7 +412,7 @@ class Simplegui2Tkinter:
         
         global output_data
         
-        if "canvas.draw_image" in output_data:
+        if ".draw_image" in output_data:
             
             # add Python Imaging Library (PIL) (to process images) and urllib 
             # (to retrieve images from Internet) if not yet available
@@ -434,7 +434,7 @@ class Simplegui2Tkinter:
             fn = "\ndef STconverter_image(img, src_coor, src_size, dest_size, a):\n" \
                  "    x1, y1 = (src_coor[0]-src_size[0]/2), (src_coor[1]-src_size[1]/2)\n" \
                  "    x2, y2 = (src_coor[0]+src_size[0]/2), (src_coor[1]+src_size[1]/2)\n" \
-                 "    image_croped = img.crop((x1, y1, x2, y2))\n" \
+                 "    image_croped = img.crop((int(x1), int(y1), int(x2), int(y2)))\n" \
                  "    image_resized = image_croped.resize(dest_size)\n" \
                  "    image_rotated = image_resized.rotate(-a)\n" \
                  "    return ImageTk.PhotoImage(image_rotated)\n\n"
@@ -453,7 +453,7 @@ class Simplegui2Tkinter:
             
             
             # update all images drawing
-            sg_image = "( *)canvas.draw_image\( *(\w+) *,\s*" \
+            sg_image = "( *)(\w+).draw_image\( *(\w+) *,\s*" \
                        "([\[\(\w\/\*\+\- ]+ *,? *[\w\/\*\+\- \]\)]*) *,\s*" \
                        "([\[\(\w\/\*\+\- ]+ *,? *[\w\/\*\+\- \]\)]*) *,\s*" \
                        "([\[\(\w\/\*\+\- ]+ *,? *[\w\/\*\+\- \]\)]*) *,\s*" \
@@ -463,40 +463,38 @@ class Simplegui2Tkinter:
             tk_image = "{s}global {n}_displayed\n" \
                        "{s}{n}_params = ({i}, {sc}, {ss}, {ds}, {a})\n" \
                        "{s}{n}_displayed = STconverter_image(*{n}_params)\n" \
-                       "{s}w_canvas.create_image({dc}, image={n}_displayed)\n"
+                       "{s}{c}.create_image({dc}, image={n}_displayed)\n"
             
             images = re.findall(sg_image, output_data)
             
             used_once = []
             
-            for image in images:
+            for i in images:
                 # check angle
-                angle = image[6] if image[6] else 0
+                angle = i[7] if i[7] else 0
                 
                 # check if the image name is already used (when the same image 
                 # is used for several displays
-                if image[1] not in used_once:
-                    used_once.append(image[1])
-                    name = image[1]
+                if i[2] not in used_once:
+                    used_once.append(i[2])
+                    name = i[2]
                 else:
                     # give a new name
                     extension = ''.join(random.sample("abcdefghij0123456789", 6))
-                    name = image[1] + extension
+                    name = i[2] + extension
                     # add a global variable
-                    output_data = re.sub("( *)({i}_displayed = ''\n)".format(i=image[1]), 
+                    output_data = re.sub("( *)({i}_displayed = ''\n)".format(i=i[2]), 
                                          "\\1\\2" \
                                          "\\1{n}_displayed = ''\n".format(n=name),
                                          output_data)
                 
-                output_data = re.sub("{s}canvas.draw_image\( *{n} *,\s*" \
+                output_data = re.sub("{s}{c}.draw_image\( *{n} *,\s*" \
                                      "{sc} *,\s*{ss} *,\s*{dc} *,\s*{ds} *,?\s*" \
-                                     "{a}? *\)".format(s=image[0], n=image[1], 
-                                     sc=re.escape(image[2]), ss=re.escape(image[3]), 
-                                     dc=re.escape(image[4]), ds=re.escape(image[5]), 
-                                     a=image[6]), 
-                                     tk_image.format(s=image[0], n=name, 
-                                     i=image[1], sc=image[2], ss=image[3], 
-                                     dc=image[4], ds=image[5], a=angle), 
+                                     "{a}? *\)".format(s=i[0], c=i[1], n=i[2], 
+                                     sc=re.escape(i[3]), ss=re.escape(i[4]), 
+                                     dc=re.escape(i[5]), ds=re.escape(i[6]), a=i[7]), 
+                                     tk_image.format(s=i[0], n=name, i=i[2], sc=i[3], 
+                                     ss=i[4], c=i[1], dc=i[5], ds=i[6], a=angle), 
                                      output_data)
     
     
