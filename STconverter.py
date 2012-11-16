@@ -382,22 +382,24 @@ class Simplegui2Tkinter:
                 m_size = urllib2.urlopen(m_all[m][1]).info().getheaders("Content-Length")[0]
                 m_all[m][1] = m_size
             
-            m_longest = max(m_all, key=lambda music: int(music[1]))[0]
+            m_longest = max(m_all, key=lambda music: int(music[1]))
             
-            # update music load, play, pause, rewind, volume
-            output_data = re.sub("{n} *=? *simplegui.load_sound\({u}\)".format(
-                                  n=m_longest[0], u=m_longest[1]), 
-                                 "pygame.mixer.music.load(urllib.urlretrieve({u})[0])".format(
-                                  u=m_longest[1]), output_data)
-            output_data = re.sub("{n}.play\(\)".format(n=m_longest[0]), 
-                                 "pygame.mixer.music.play(-1, pygame.mixer.music.get_pos())", output_data)
-            output_data = re.sub("{n}.pause\(\)".format(n=m_longest[0]), 
-                                 "pygame.mixer.music.pause()", output_data)
-            output_data = re.sub("{n}.rewind\(\)".format(n=m_longest[0]), 
-                                 "pygame.mixer.music.rewind()", output_data)
-            output_data = re.sub("{n}.set_volume\((.*)\)".format(n=m_longest[0]), 
-                                 "pygame.mixer.music.set_volume(\\1)", output_data)
-            
+            # if the size seems reasonable to be a music and not a sound
+            if int(m_longest[1]) >= 500000:
+                m = m_longest[0]
+                # update music load, play, pause, rewind, volume
+                output_data = re.sub("{n} *=? *simplegui.load_sound\({u}\)".format(
+                                      n=m[0], u=m[1]), 
+                                     "pygame.mixer.music.load(urllib.urlretrieve({u})[0])".format(
+                                      u=m[1]), output_data)
+                output_data = re.sub("{n}.play\(\)".format(n=m[0]), 
+                                     "pygame.mixer.music.play(-1, pygame.mixer.music.get_pos())", output_data)
+                output_data = re.sub("{n}.pause\(\)".format(n=m[0]), 
+                                     "pygame.mixer.music.pause()", output_data)
+                output_data = re.sub("{n}.rewind\(\)".format(n=m[0]), 
+                                     "pygame.mixer.music.rewind()", output_data)
+                output_data = re.sub("{n}.set_volume\((.*)\)".format(n=m[0]), 
+                                     "pygame.mixer.music.set_volume(\\1)", output_data)
             
             # update others musics/sounds to use the pygame sound module
             output_data = re.sub("simplegui.load_sound\((.*)\)",
