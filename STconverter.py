@@ -89,8 +89,8 @@ class Simplegui2Tkinter:
                    "\\1\\2.pack()\n"
         tk_canvas = "\\1canvas = Tkinter.Canvas(\\2, width=\\4, height=\\5)\n" \
                     "\\1canvas.pack(side='right')\n"
-        sg_bg = "\w+.set_canvas_background\([\"\'](.+)[\"\']\)"
-        tk_bg = "\\1canvas.configure(background='{}')\n"
+        sg_bg = "\w+.set_canvas_background\( *([\"\']?.+?[\"\']?) *\)"
+        tk_bg = "\\1canvas.configure(background={})\n"
         
         FRAME_RE = re.compile(sg_frame)
         
@@ -110,7 +110,7 @@ class Simplegui2Tkinter:
         
         # create canvas with size used in "simplegui.create_frame"
         # and with a black background by default
-        bg_color = "Black"
+        bg_color = "'Black'"
         if ".set_canvas_background" in output_data:
             bg_color = re.findall(sg_bg, output_data)[0]
             output_data = re.sub(sg_bg, '', output_data)
