@@ -81,18 +81,18 @@ class Simplegui2Tkinter:
         
         global output_data
         
-        sg_frame = "^(\w+) *= *simplegui.create_frame\( *(\w+|[\"\'].+[\"\']) *,[\s\\\]*" \
-                   "([\w \/\-\+\*\[\]]+) *,[\s\\\]*([\w \/\-\+\*\[\]]+) *,?[\s\\\]*([\w \/\-\+\*\[\]]+)? *\)"
-        tk_frame = "window_root = Tkinter.Tk()\n" \
-                   "window_root.title(\\2)\n" \
-                   "\\1 = Tkinter.Frame(window_root)\n" \
-                   "\\1.pack()\n"
-        tk_canvas = "canvas = Tkinter.Canvas(\\1, width=\\3, height=\\4)\n" \
-                    "canvas.pack(side='right')\n"
+        sg_frame = "( *)(\w+) *= *simplegui.create_frame\( *([\[\(\w\]\)]+|[\"\'].+[\"\']) *,[\s\\\]*" \
+                   "([\w \/\-\+\*\%\[\(\]\)]+) *,[\s\\\]*([\w \/\-\+\*\%\[\(\]\)]+) *,?[\s\\\]*([\w \/\-\+\*\%\[\(\]\)]+)? *\)"
+        tk_frame = "\\1window_root = Tkinter.Tk()\n" \
+                   "\\1window_root.title(\\3)\n" \
+                   "\\1\\2 = Tkinter.Frame(window_root)\n" \
+                   "\\1\\2.pack()\n"
+        tk_canvas = "\\1canvas = Tkinter.Canvas(\\2, width=\\4, height=\\5)\n" \
+                    "\\1canvas.pack(side='right')\n"
         sg_bg = "\w+.set_canvas_background\([\"\'](.+)[\"\']\)"
-        tk_bg = "canvas.configure(background='{}')\n"
+        tk_bg = "\\1canvas.configure(background='{}')\n"
         
-        FRAME_RE = re.compile(sg_frame, re.MULTILINE)
+        FRAME_RE = re.compile(sg_frame)
         
         
         # if no need for Canvas widget, update only the Frame
