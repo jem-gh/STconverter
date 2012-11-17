@@ -171,17 +171,17 @@ class Simplegui2Tkinter:
                 c, var, r, w, l, f = oval
                 name = re.findall(r'(\w+ *= *)?{c}.draw_circle\( *{v} *,[\s\\\]*' \
                                    '{r} *,[\s\\\]*{w} *,[\s\\\]*{l} *,?[\s\\\]*(?:{f} *)?\)'.format(
-                                    c=c, v=var, r=r, w=w, l=l, f=f), output_data)
+                                    c=c, v=var, r=r, w=w, l=l, f=re.escape(f)), output_data)
                 name = name[0] if name else ''
                 space = re.findall(r'( *){n}{c}.draw_circle\( *{v} *,[\s\\\]*' \
                                     '{r} *,[\s\\\]*{w} *,[\s\\\]*{l} *,?[\s\\\]*(?:{f} *)?\)'.format(
-                                    n=name, c=c, v=re.escape(var), r=r, w=w, l=l, f=f), 
+                                    n=name, c=c, v=re.escape(var), r=r, w=w, l=l, f=re.escape(f)), 
                                    output_data)
                 space = space[0] if space else ''
                 f = f if f else '""'
                 output_data = re.sub(r'{n}{c}.draw_circle\( *{v} *,[\s\\\]*' \
                                       '{r} *,[\s\\\]*{w} *,[\s\\\]*{l} *,?[\s\\\]*(?:{f} *)?\)'.format(
-                                      n=name, c=c, v=re.escape(var), r=r, w=w, l=l, f=f), 
+                                      n=name, c=c, v=re.escape(var), r=r, w=w, l=l, f=re.escape(f)), 
                                      tk_oval_var.format(v=var, s=space, n=name, c=c, r=r, w=w, l=l, f=f), 
                                      output_data)
         
