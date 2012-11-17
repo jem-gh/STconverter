@@ -210,8 +210,8 @@ class Simplegui2Tkinter:
         
         global output_data
         
-        sg_button = "(?:\w+ *= *)?(\w+).add_button\((.+?), *(\w+),? *(\d+)? *\)([ #\w]*)"
-        sg_b_ch =   "(?:\w+ *= *)?{f}.add_button\({m}, *{h},? *{s} *\)({r})"
+        sg_button = "(?:\w+ *= *)?(\w+).add_button\( *(.+?) *,[\s\\\]*(\w+) *,?[\s\\\]*(\d+)? *\)([ #\w]*)"
+        sg_b_ch =   "(?:\w+ *= *)?{f}.add_button\( *{m} *,[\s\\\]*{h} *,?[\s\\\]*{s} *\)({r})"
         tk_b_ws = "{h}_bt = Tkinter.Button({f}, text={m}, command={h}){r}\n" \
                   "{h}_bt.config(width={s})\n" \
                   "{h}_bt.pack()\n"
