@@ -130,8 +130,10 @@ class Simplegui2Tkinter:
         
         # update Canvas methods
         # Text
-        sg_txt = "(\w+).draw_text\( *(.+) *,[\s\\\]*" \
-                 "(\w+|[\[\(][\w \+\-\*\/,]+[\]\)]) *,[\s\\\]*(\w+) *,[\s\\\]*([\"\']?\w+[\"\']?) *\)"
+        #sg_txt = "(\w+).draw_text\( *(.+) *,[\s\\\]*" \
+        #         "(\w+|[\[\(][\w \+\-\*\/,]+[\]\)]) *,[\s\\\]*(\w+) *,[\s\\\]*([\"\']?\w+[\"\']?) *\)"
+        sg_txt = "(\w+).draw_text\( *([\"\']?.+?[\"\']?) *,[\s\\\]*" \
+                 "([\w \/\-\+\*\%\[\(\]\),]+) *,[\s\\\]*([\w \/\-\+\*\%\[\(\]\)]+) *,[\s\\\]*([\"\']?.+?[\"\']?) *\)"
         tk_txt = "\\1.create_text(\\3, anchor='sw', " \
                  "text=\\2, font=('DejaVu Serif Condensed', \\4), fill=\\5)"
         output_data = re.sub(sg_txt, tk_txt, output_data)
