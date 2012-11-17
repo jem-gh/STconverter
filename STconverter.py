@@ -591,9 +591,10 @@ class Simplegui2Tkinter:
         """ some color names specified to draw object in SimpleGUI canvas 
             aren't always well recognized by Tkinter ... change to their 
             RGB value """
-        output_data = re.sub(r"[\"\']Lime[\"\']", r"'#00FF00'", output_data)
         output_data = re.sub(r"[\"\']Aqua[\"\']", r"'#00FFFF'", output_data)
         output_data = re.sub(r"[\"\']Fuchsia[\"\']", r"'#FF00FF'", output_data)
+        output_data = re.sub(r"[\"\']Lime[\"\']", r"'#00FF00'", output_data)
+        output_data = re.sub(r"[\"\']Olive[\"\']", r"'#808000'", output_data)
         output_data = re.sub(r"[\"\']Teal[\"\']", r"'#008080'", output_data)
         
         """ SimpleGUI handles doc strings ending with four double quotes 
