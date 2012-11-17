@@ -334,7 +334,7 @@ class Simplegui2Tkinter:
                 output_data = re.sub(sg_timer_stop, tk_timer_stop, output_data)
                 
                 # update timer
-                sg_timer = "{n} *= *simplegui.create_timer\((\w+), *(\w+)\)".format(n=timer_name)
+                sg_timer = "{n} *= *simplegui.create_timer\( *(\w+) *,[\s\\\]*(\w+) *\)".format(n=timer_name)
                 tk_timer = "{n}_status = False\n\n" \
                            "def {n}_st(status):\n" \
                            "    global {n}_status\n" \
