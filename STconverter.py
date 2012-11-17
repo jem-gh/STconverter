@@ -24,8 +24,8 @@
 
 # import global modules
 import re
-import urllib2 # used by up_music()
-import random # used by up_image()
+import urllib2      # used by up_music()
+import random       # used by up_image()
 
 
 
@@ -58,7 +58,7 @@ class Simplegui2Tkinter:
         self.up_key()
         self.up_mouse()
         self.up_ini()
-        self.up_color()
+        self.up_Tkinter_incompatible()
     
     
     def up_module(self):
@@ -242,8 +242,8 @@ class Simplegui2Tkinter:
         
         global output_data
         
-        sg_label =    "(\w*?) *=? *(\w+).add_label\((.*)\)" # to retrieve params
-        sg_label_r  = "{n} *=? *{f}.add_label\({v}\)" # to update
+        sg_label =    "(\w*?) *=? *(\w+).add_label\((.*)\)"
+        sg_label_r  = "{n} *=? *{f}.add_label\({v}\)"
         tk_label_nv = "Tkinter.Label({f}, text={v}).pack()"
         tk_label_wv = "{n}_var = Tkinter.StringVar()\n" \
                       "{n} = Tkinter.Label({f}, textvariable={n}_var).pack()\n" \
@@ -401,6 +401,7 @@ class Simplegui2Tkinter:
                                      "pygame.mixer.music.rewind()", output_data)
                 output_data = re.sub("{n}.set_volume\((.*)\)".format(n=m[0]), 
                                      "pygame.mixer.music.set_volume(\\1)", output_data)
+            
             
             # update others musics/sounds to use the pygame sound module
             output_data = re.sub("simplegui.load_sound\((.*)\)",
@@ -583,15 +584,21 @@ class Simplegui2Tkinter:
         output_data = output_data + "\n\nwindow_root.mainloop()\n"
     
     
-    def up_color(self):
-        """ some colors used to draw object in SimpleGUI canvas aren't 
-            recognized by Tkinter ... try to find a color as close as 
-            possible for the colors with known issue """
+    def up_Tkinter_incompatible(self):
         
         global output_data
         
-        output_data = re.sub(r"[\"\']Lime[\"\']", r"'Lime green'", output_data)
-        output_data = re.sub(r"[\"\']Aqua[\"\']", r"'Cyan'", output_data)
+        """ some color names specified to draw object in SimpleGUI canvas 
+            aren't always well recognized by Tkinter ... change to their 
+            RGB value """
+        output_data = re.sub(r"[\"\']Lime[\"\']", r"'#00FF00'", output_data)
+        output_data = re.sub(r"[\"\']Aqua[\"\']", r"'#00FFFF'", output_data)
+        output_data = re.sub(r"[\"\']Fuchsia[\"\']", r"'#FF00FF'", output_data)
+        output_data = re.sub(r"[\"\']Teal[\"\']", r"'#008080'", output_data)
+        
+        """ SimpleGUI handles doc strings ending with four double quotes 
+            which is not always well handled by other Python interpreters """
+        output_data = re.sub('""""', '"""', output_data)
 
 
 
