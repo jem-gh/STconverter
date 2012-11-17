@@ -102,7 +102,7 @@ class Simplegui2Tkinter:
         
         
         # find name of drawing handler
-        draw_handler = re.findall(r'\w+.set_draw_handler\((.+)\)', output_data)[0]
+        draw_handler = re.findall(r'\w+.set_draw_handler\( *(.+) *\)', output_data)[0]
         
         # update drawing handler
         DH_RE = re.compile(r'( *)def ({n})\( *(\w+) *\): *\n(\s+)'.format(n=draw_handler))
@@ -120,11 +120,11 @@ class Simplegui2Tkinter:
         # replace "set_draw_handler" with drawing handler call
         refresh_time = 17 # in ms (66ms~15fps; 33ms~30fps; 17ms~60fps)
         
-        dh_old = "\w+.set_draw_handler\({h}\)".format(h=draw_handler)
-        dh_new = "def refresh_canvas():\n" \
-                 "    {h}(canvas)\n" \
-                 "    window_root.after({t}, refresh_canvas)\n\n" \
-                 "refresh_canvas()\n".format(h=draw_handler, t=refresh_time)
+        dh_old = "( *)\w+.set_draw_handler\( *{h} *\)".format(h=draw_handler)
+        dh_new = "\\1def refresh_canvas():\n" \
+                 "\\1    {h}(canvas)\n" \
+                 "\\1    window_root.after({t}, refresh_canvas)\n\n" \
+                 "\\1refresh_canvas()\n".format(h=draw_handler, t=refresh_time)
         output_data = re.sub(dh_old, dh_new, output_data)
         
         
