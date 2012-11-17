@@ -105,7 +105,7 @@ class Simplegui2Tkinter:
         draw_handler = re.findall(r'\w+.set_draw_handler\((.+)\)', output_data)[0]
         
         # update drawing handler
-        DH_RE = re.compile(r'( *)def ({n})\((\w+)\): *\n(\s+)'.format(n=draw_handler))
+        DH_RE = re.compile(r'( *)def ({n})\( *(\w+) *\): *\n(\s+)'.format(n=draw_handler))
         output_data = DH_RE.sub(r'\1def \2(\3):\n\4\3.delete("all")\n\4\n\4', output_data)
         
         # create canvas with size used in "simplegui.create_frame"
