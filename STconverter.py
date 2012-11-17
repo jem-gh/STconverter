@@ -279,11 +279,11 @@ class Simplegui2Tkinter:
         if "add_input" in output_data:
             
             input_widget = {
-            "input_name":    "\w+.add_input\(.+, ?(\w+), ?\d+\)", 
-            "param_name":    "^def {n}\((\w+)\):", 
-            "handler":       "^def {n}\({p}\):(?:\n .*)+[=( \-+*/]{p}[) \-+*/\n]", 
+            "input_name":    "\w+.add_input\(.+ *,[\s\\\]*(\w+) *,[\s\\\]*\d+ *\)", 
+            "param_name":    "^def {n}\( *(\w+) *\): *", 
+            "handler":       "^def {n}\( *{p} *\): *(?:\n .*)+[=( \-+*/]{p}[) \-+*/\n]", 
             "handler_param": "(?<=(?<!{i})[= \(\-+*/]){p}(?=[ \)\-+*/\n])", 
-            "sg_input":      "(?:\w+ ?= ?)?(\w+).add_input\((.+), ?(\w+), ?(\d+)\d\)([ #\w]*)", 
+            "sg_input":      "(?:\w+ ?= ?)?(\w+).add_input\( *(.+) *,[\s\\\]*(\w+) *,[\s\\\]*(\d+) *\d\)([ #\w]*)", 
             "tk_input":      "\\3_lb = Tkinter.Label(\\1, text=\\2)\\5\n" + \
                              "\\3_lb.pack()\n" + \
                              "\\3_et = Tkinter.Entry(\\1)\n" + \
