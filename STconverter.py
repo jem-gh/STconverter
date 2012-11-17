@@ -595,6 +595,7 @@ class Simplegui2Tkinter:
         output_data = re.sub(r"[\"\']Fuchsia[\"\']", r"'#FF00FF'", output_data)
         output_data = re.sub(r"[\"\']Lime[\"\']", r"'#00FF00'", output_data)
         output_data = re.sub(r"[\"\']Olive[\"\']", r"'#808000'", output_data)
+        output_data = re.sub(r"[\"\']Silver[\"\']", r"'#C0C0C0'", output_data)
         output_data = re.sub(r"[\"\']Teal[\"\']", r"'#008080'", output_data)
         
         """ SimpleGUI handles doc strings ending with four double quotes 
