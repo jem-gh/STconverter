@@ -242,12 +242,12 @@ class Simplegui2Tkinter:
         
         global output_data
         
-        sg_label =    "(\w*?) *=? *(\w+).add_label\((.*)\)"
-        sg_label_r  = "{n} *=? *{f}.add_label\({v}\)"
-        tk_label_nv = "Tkinter.Label({f}, text={v}).pack()"
+        sg_label =    "(\w*?) *=? *(\w+).add_label\( *([^,\n#]*) *,?[\s\\\]*(\w+)? *\)"
+        sg_label_c  = "{n} *=? *{f}.add_label\( *{m} *,?[\s\\\]*{s} *\)"
+        tk_label_nv = "Tkinter.Label({f}, text={m}).pack()"
         tk_label_wv = "{n}_var = Tkinter.StringVar()\n" \
                       "{n} = Tkinter.Label({f}, textvariable={n}_var).pack()\n" \
-                      "{n}_var.set({v})"
+                      "{n}_var.set({m})"
         
         # find all labels in order to differentiate the one using text variable
         labels = re.findall(sg_label, output_data)
@@ -255,8 +255,8 @@ class Simplegui2Tkinter:
         for l in labels:
             # not using text variable
             if ("\n{n}.set_text".format(n=l[0]) and " {n}.set_text".format(n=l[0])) not in output_data:
-                output_data = re.sub(sg_label_r.format(n=l[0], f=l[1], v=l[2]), 
-                                     tk_label_nv.format(f=l[1], v=l[2]), 
+                output_data = re.sub(sg_label_c.format(n=l[0], f=l[1], m=re.escape(l[2]), s=l[3]), 
+                                     tk_label_nv.format(f=l[1], m=l[2]), 
                                      output_data)
             
             # using text variable
@@ -266,8 +266,8 @@ class Simplegui2Tkinter:
                                      r"\1{n}_var.set(".format(n=l[0]), output_data)
                 
                 # update Label
-                output_data = re.sub(sg_label_r.format(n=l[0], f=l[1], v=re.escape(l[2])), 
-                                     tk_label_wv.format(n=l[0], f=l[1], v=l[2]), 
+                output_data = re.sub(sg_label_c.format(n=l[0], f=l[1], m=re.escape(l[2]), s=l[3]), 
+                                     tk_label_wv.format(n=l[0], f=l[1], m=l[2]), 
                                      output_data)
     
     
