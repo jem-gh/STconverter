@@ -82,7 +82,7 @@ class Simplegui2Tkinter:
         global output_data
         
         sg_frame = "( *)(\w+) *= *simplegui.create_frame\( *([\[\(\w\]\)]+|[\"\'].+[\"\']) *,[\s\\\]*" \
-                   "([\w \/\-\+\*\%\[\(\]\)]+) *,[\s\\\]*([\w \/\-\+\*\%\[\(\]\)]+) *,?[\s\\\]*([\w \/\-\+\*\%\[\(\]\)]+)? *\)"
+                   "([\w \/\-\+\*\%\.\[\(\]\)]+) *,[\s\\\]*([\w \/\-\+\*\%\.\[\(\]\)]+) *,?[\s\\\]*([\w \/\-\+\*\%\.\[\(\]\)]+)? *\)"
         tk_frame = "\\1window_root = Tkinter.Tk()\n" \
                    "\\1window_root.title(\\3)\n" \
                    "\\1\\2 = Tkinter.Frame(window_root)\n" \
