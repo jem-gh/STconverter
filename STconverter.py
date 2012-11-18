@@ -186,9 +186,10 @@ class Simplegui2Tkinter:
                                      output_data)
         
         # Line
-        sg_line = "(\w+).draw_line\( *([\w\s\+\-\*\/\%\.\[\(\]\),\\\\]+) *,[\s\\\]*" \
+        sg_line = "(\w+).draw_line\( *([\w \+\-\*\/\%\.\[\(\]\),]+) *,[\s\\\]*([\w \+\-\*\/\%\.\[\(\]\),]+) *,[\s\\\]*" \
                   "([\w \+\-\*\/\%\.\[\(\]\)]+) *,[\s\\\]*([\"\']?.+?[\"\']?) *\)"
-        tk_line = "\\1.create_line(\\2, width=\\3, fill=\\4)"
+        tk_line = "\\1.create_line(\\2, \\3, width=\\4, fill=\\5)"
+        
         output_data = re.sub(sg_line, tk_line, output_data)
         
         # Polyline
