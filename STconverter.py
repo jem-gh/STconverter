@@ -191,6 +191,12 @@ class Simplegui2Tkinter:
         tk_line = "\\1.create_line(\\2, width=\\3, fill=\\4)"
         output_data = re.sub(sg_line, tk_line, output_data)
         
+        # Polyline
+        sg_pline = "(\w+).draw_polyline\( *([\[\(\w,\s\+\-\*\/\%\.\]\)\\\\]+) *,[\s\\\]*" \
+                   "([\w \+\-\*\/\%\.\[\(\]\)]+) *,[\s\\\]*([\"\']?.+?[\"\']?) *\)"
+        tk_line = "\\1.create_line(\\2, width=\\3, fill=\\4)"
+        output_data = re.sub(sg_pline, tk_line, output_data)
+        
         # Polygon
         sg_poly = "(\w+).draw_polygon\( *(\[?[\[\(\w,\s\+\-\*\/\]\)\\\\]+?\]?) *,[\s\\\]*" \
                   "(\w+) *,[\s\\\]*([\"\'\[\w\]]+) *,?[\s\\\]*([\"\'\[\w\]]*?) *\)"
