@@ -350,40 +350,43 @@ class Simplegui2Tkinter:
         
         if "add_input" in output_data:
             
-            input_widget = {
-            "input_name":    "\w+.add_input\(.+ *,[\s\\\]*(\w+) *,[\s\\\]*\d+ *\)", 
-            "param_name":    "^def {n}\( *(\w+) *\): *", 
-            "handler":       "^def {n}\( *{p} *\): *(?:\n .*)+[=( \-+*/]{p}[) \-+*/\n]", 
-            "handler_param": "(?<=(?<!{i})[= \(\-+*/]){p}(?=[ \)\-+*/\n])", 
-            "sg_input":      "(?:\w+ ?= ?)?(\w+).add_input\( *(.+) *,[\s\\\]*(\w+) *,[\s\\\]*(\d+) *\d\)([ #\w]*)", 
-            "tk_input":      "\\3_lb = Tkinter.Label(\\1, text=\\2)\\5\n" + \
-                             "\\3_lb.pack()\n" + \
-                             "\\3_et = Tkinter.Entry(\\1)\n" + \
-                             "\\3_et.bind('<Return>', \\3)\n" + \
-                             "\\3_et.config(width=\\4)\n" + \
-                             "\\3_et.pack()\n"}
+            sg_input = "{I}{No} *=? *{C}.add_input\( *{Pq}{S}{N}{S}{P} *\)([ #\w]*)"
+            tk_input = "{i}{n}_lb = Tkinter.Label({f}, text={l})\\1\n" \
+                       "{i}{n}_lb.pack()\n" \
+                       "{i}{n}_et = Tkinter.Entry({f})\n" \
+                       "{i}{n}_et.bind('<Return>', {n})\n" \
+                       "{i}{n}_et.config(width={s})\n" \
+                       "{i}{n}_et.pack()\n"
+            sg_inp_fn_p = "def {n}\( *{N} *\):"
+            sg_inp_fn   = "def {n}\( *{p} *\): *(?:\n .*)+[=( \-+*/]{p}[) \-+*/\n]"
+            param_def   = "(?<=(?<!{i})[= \(\-+*/]){p}(?=[ \)\-+*/\n])"
+
+            inputs = re.findall(sg_input.format(I=RNI["I"], No=RNI["No"], 
+                                    C=RNI["C"], Pq=RNI["Pq"], S=RNI["S"], 
+                                    N=RNI["N"], P=RNI["P"]), 
+                                output_data)
             
-            # retrieve all Input widgets and respective handler names
-            input_names = re.findall(input_widget["input_name"], output_data)
-            
-            for input_name in input_names:
+            for i in inputs:
                 # retrieve parameter name used in the Input handler
-                param_name = re.findall(input_widget["param_name"].format(n=input_name), 
-                                        output_data, re.MULTILINE)[0]
+                param = re.findall(sg_inp_fn_p.format(n=i[4], N=RNI["N"]), 
+                                   output_data)[0]
                 
                 # find and update parameter in the Input handler
-                HANDLER_RE = re.compile(input_widget["handler"].format(n=input_name, 
-                                        p=param_name), re.MULTILINE)
-                
-                handler_old = re.findall(HANDLER_RE, output_data)[0]
-                handler_new = re.sub(input_widget["handler_param"].format(i=input_name, p=param_name), 
-                                     "{}_et.get()".format(input_name), handler_old)
-                
+                handler_old = re.findall(sg_inp_fn.format(n=i[4], p=param), 
+                                         output_data)[0]
+                handler_new = re.sub(param_def.format(i=i[4], p=param), 
+                                     "{}_et.get()".format(i[4]), 
+                                     handler_old)
                 output_data = output_data.replace(handler_old, handler_new)
                 
                 ## write Tkinter GUI of the Input widget
-                INPUT_RE = re.compile(input_widget["sg_input"])
-                output_data = INPUT_RE.sub(input_widget["tk_input"], output_data)
+                tk_input_size = "int(" + i[5] + "/10)"
+                output_data = re.sub(sg_input.format(I=i[0], No=i[1], C=i[2], 
+                                         Pq=re.escape(i[3]), S=RNI["S"], N=i[4], 
+                                         P=re.escape(i[5])), 
+                                     tk_input.format(i=i[0], n=i[4], f=i[2], 
+                                         l=i[3], s=tk_input_size), 
+                                     output_data)
     
     
     def up_timer(self):
