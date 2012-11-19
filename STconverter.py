@@ -137,8 +137,8 @@ class Simplegui2Tkinter:
         output_data = re.sub(sg_txt, tk_txt, output_data)
         
         # Oval
-        sg_circle = "(\w+).draw_circle\( *(\w+|[\(\[\w, \)\]]+) *,[\s\\\]*(\w+|\d+) *,[\s\\\]*" \
-                    "(\w+|\d+) *,[\s\\\]*([\"\']?\w+[\"\']?) *,?[\s\\\]*([\"\'\[\(\w\"\'\]\)]+)? *\)"
+        sg_circle = "(\w+).draw_circle\( *(\w+[\[\w\]]+|[\[\(\w,\s\+\-\*\/\%\.\]\)\\\\]+) *,[\s\\\]*([\w \+\-\*\/\%\.\[\(\]\)]+) *,[\s\\\]*" \
+                    "([\w \+\-\*\/\%\.\[\(\]\)]+) *,[\s\\\]*([\"\'\[\w\]]+) *,?[\s\\\]*([\"\'\[\w\]]+)? *\)"
         tk_oval =     '{c}.create_oval(({x1},{y1},{x2},{y2}), width={w}, ' \
                       'outline={l}, fill={f})'
         tk_oval_var = 't_x, t_y = {v}\n' \
@@ -151,10 +151,10 @@ class Simplegui2Tkinter:
         ovals = re.findall(sg_circle, output_data)
         
         for oval in ovals:
-            is_pos_digit = not re.findall(r"[a-zA-Z]", oval[1])
-            is_rad_digit = not re.findall(r"[a-zA-Z]", oval[2])
+            is_pos_digit = not re.findall(r"[a-zA-Z\+\-\*\/\%]", oval[1])
+            is_rad_digit = not re.findall(r"[a-zA-Z\+\-\*\/\%]", oval[2])
             
-            # if position and radius use digit
+            # if position and radius use digit, no variables nor operations
             if is_pos_digit and is_rad_digit:
                 c, xy, r, w, l, f = oval
                 x, y = re.findall(r"\d+", xy)
@@ -171,17 +171,17 @@ class Simplegui2Tkinter:
                 c, var, r, w, l, f = oval
                 name = re.findall(r'(\w+ *= *)?{c}.draw_circle\( *{v} *,[\s\\\]*' \
                                    '{r} *,[\s\\\]*{w} *,[\s\\\]*{l} *,?[\s\\\]*(?:{f} *)?\)'.format(
-                                    c=c, v=var, r=r, w=w, l=l, f=re.escape(f)), output_data)
+                                    c=c, v=re.escape(var), r=re.escape(r), w=re.escape(w), l=re.escape(l), f=re.escape(f)), output_data)
                 name = name[0] if name else ''
                 space = re.findall(r'( *){n}{c}.draw_circle\( *{v} *,[\s\\\]*' \
                                     '{r} *,[\s\\\]*{w} *,[\s\\\]*{l} *,?[\s\\\]*(?:{f} *)?\)'.format(
-                                    n=name, c=c, v=re.escape(var), r=r, w=w, l=l, f=re.escape(f)), 
+                                    n=name, c=c, v=re.escape(var), r=re.escape(r), w=re.escape(w), l=re.escape(l), f=re.escape(f)), 
                                    output_data)
                 space = space[0] if space else ''
                 f = f if f else '""'
                 output_data = re.sub(r'{n}{c}.draw_circle\( *{v} *,[\s\\\]*' \
                                       '{r} *,[\s\\\]*{w} *,[\s\\\]*{l} *,?[\s\\\]*(?:{f} *)?\)'.format(
-                                      n=name, c=c, v=re.escape(var), r=r, w=w, l=l, f=re.escape(f)), 
+                                      n=name, c=c, v=re.escape(var), r=re.escape(r), w=re.escape(w), l=re.escape(l), f=re.escape(f)), 
                                      tk_oval_var.format(v=var, s=space, n=name, c=c, r=r, w=w, l=l, f=f), 
                                      output_data)
         
