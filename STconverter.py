@@ -42,7 +42,7 @@ RNI = {
 "I"  : "( *)", 
     # NAME
 "N"  : "(\w+)", 
-    # CANVAS
+    # CANVAS / FRAME
 "C"  : "(\w+)", 
     # PARAMETER: digit, variable, list, operation
 "P"  : "([\w\+\-\*\/\%\.\[\(\]\) ]+)", 
@@ -262,30 +262,40 @@ class Simplegui2Tkinter:
         
         global output_data
         
-        sg_button = "(?:\w+ *= *)?(\w+).add_button\( *(.+?) *,[\s\\\]*(\w+) *,?[\s\\\]*(\d+)? *\)([ #\w]*)"
-        sg_b_ch =   "(?:\w+ *= *)?{f}.add_button\( *{m} *,[\s\\\]*{h} *,?[\s\\\]*{s} *\)({r})"
-        tk_b_ws = "{h}_bt = Tkinter.Button({f}, text={m}, command={h}){r}\n" \
-                  "{h}_bt.config(width={s})\n" \
-                  "{h}_bt.pack()\n"
-        tk_b_ns = "{h}_bt = Tkinter.Button({f}, text={m}, command={h}){r}\n" \
-                  "{h}_bt.pack()\n"
+        sg_button = "{C}.add_button\( *{Pq}{S}{N}{S}?{P}? *\)([ #\w]*)".\
+                    format(C=RNI["C"], Pq=RNI["Pq"], S=RNI["S"], N=RNI["N"], 
+                           P=RNI["P"])
+        sg_b_ch =   "{I}(?:\w+ *= *)?{f}.add_button\( *{m}{S}{h}{S}?{s} *\)({r})"
+        tk_b_ws = "\\1{h}_bt = Tkinter.Button({f}, text={m}, command={h}){r}\n" \
+                  "\\1{h}_bt.config(width={s})\n" \
+                  "\\1{h}_bt.pack()\n"
+        tk_b_ns = "\\1{h}_bt = Tkinter.Button({f}, text={m}, command={h}){r}\n" \
+                  "\\1{h}_bt.pack()\n"
         
         buttons = re.findall(sg_button, output_data)
         
         for button in buttons:
-            size = int(button[3]) / 10 if button[3] else ''
+            # decrease by a factor 10 the button size (if any) to fit Tkinter 
+            size = button[3] if button[3] else ''
+            is_size_digit = not re.findall(r"[a-zA-Z\+\-\*\/\%]", size)
+            if size and is_size_digit:
+                size = int(size) / 10
             
             if size:
-                output_data = re.sub(sg_b_ch.format(f=button[0], m=button[1], 
-                                       h=button[2], s=button[3], r=button[4]),
+                output_data = re.sub(sg_b_ch.format(I=RNI["I"], f=button[0], 
+                                         m=re.escape(button[1]), S=RNI["S"], 
+                                         h=button[2], s=re.escape(button[3]), 
+                                         r=re.escape(button[4])),
                                      tk_b_ws.format(f=button[0], m=button[1], 
-                                       h=button[2], s=size, r=button[4]), 
+                                         h=button[2], s=size, r=button[4]), 
                                      output_data)
             elif not size:
-                output_data = re.sub(sg_b_ch.format(f=button[0], m=button[1], 
-                                       h=button[2], s=button[3], r=button[4]),
+                output_data = re.sub(sg_b_ch.format(I=RNI["I"], f=button[0], 
+                                         m=re.escape(button[1]), S=RNI["S"], 
+                                         h=button[2], s=re.escape(button[3]), 
+                                         r=re.escape(button[4])),
                                      tk_b_ns.format(f=button[0], m=button[1], 
-                                       h=button[2], r=button[4]), 
+                                         h=button[2], r=button[4]), 
                                      output_data)
     
     
