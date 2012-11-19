@@ -42,6 +42,8 @@ RNI = {
 "I"  : "( *)", 
     # NAME
 "N"  : "(\w+)", 
+    # NAME OPTIONAL
+"No" : "(\w*?)", 
     # CANVAS / FRAME
 "C"  : "(\w+)", 
     # PARAMETER: digit, variable, list, operation
@@ -304,20 +306,26 @@ class Simplegui2Tkinter:
         
         global output_data
         
-        sg_label =    "(\w*?) *=? *(\w+).add_label\( *([^,\n#]*) *,?[\s\\\]*(\w+)? *\)"
-        sg_label_c  = "{n} *=? *{f}.add_label\( *{m} *,?[\s\\\]*{s} *\)"
-        tk_label_nv = "Tkinter.Label({f}, text={m}).pack()"
-        tk_label_wv = "{n}_var = Tkinter.StringVar()\n" \
-                      "{n} = Tkinter.Label({f}, textvariable={n}_var).pack()\n" \
-                      "{n}_var.set({m})"
+        sg_label =    "{No} *=? *{C}.add_label\( *{Pq}{S}?{P}? *\)".\
+                      format(No=RNI["No"], C=RNI["C"], Pq=RNI["Pq"], 
+                             S=RNI["S"], P=RNI["P"])
+        sg_label_nv  = "{I}{n} *=? *{f}.add_label\( *{m}{S}?{s} *\)"
+        sg_label_wv  = "{I}{n} *= *{f}.add_label\( *{m}{S}?{s} *\)"
+        tk_label_nv = "\\1Tkinter.Label({f}, text={m}).pack()"
+        tk_label_wv = "\\1{n}_var = Tkinter.StringVar()\n" \
+                      "\\1{n} = Tkinter.Label({f}, textvariable={n}_var).pack()\n" \
+                      "\\1{n}_var.set({m})"
         
-        # find all labels in order to differentiate the one using text variable
+        # find all labels in order to differentiate the ones using text variable
         labels = re.findall(sg_label, output_data)
         
         for l in labels:
             # not using text variable
-            if ("\n{n}.set_text".format(n=l[0]) and " {n}.set_text".format(n=l[0])) not in output_data:
-                output_data = re.sub(sg_label_c.format(n=l[0], f=l[1], m=re.escape(l[2]), s=l[3]), 
+            if ("\n{n}.set_text".format(n=l[0]) and 
+                " {n}.set_text".format(n=l[0])) not in output_data:
+                output_data = re.sub(sg_label_nv.format(I=RNI["I"], n=l[0], 
+                                         f=l[1], S=RNI["S"], m=re.escape(l[2]), 
+                                         s=re.escape(l[3])), 
                                      tk_label_nv.format(f=l[1], m=l[2]), 
                                      output_data)
             
@@ -325,10 +333,12 @@ class Simplegui2Tkinter:
             else:
                 # update setting message
                 output_data = re.sub(r"([\n ]){n}.set_text\(".format(n=l[0]), 
-                                     r"\1{n}_var.set(".format(n=l[0]), output_data)
-                
+                                     r"\1{n}_var.set(".format(n=l[0]), 
+                                     output_data)
                 # update Label
-                output_data = re.sub(sg_label_c.format(n=l[0], f=l[1], m=re.escape(l[2]), s=l[3]), 
+                output_data = re.sub(sg_label_wv.format(I=RNI["I"], n=l[0], 
+                                         f=l[1], S=RNI["S"], m=re.escape(l[2]), 
+                                         s=re.escape(l[3])), 
                                      tk_label_wv.format(n=l[0], f=l[1], m=l[2]), 
                                      output_data)
     
