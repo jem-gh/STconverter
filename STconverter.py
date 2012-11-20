@@ -460,19 +460,34 @@ class Simplegui2Tkinter:
             # update the longest music/sound to use the pygame music module
             
             # find all musics/sounds
-            m_all = re.findall("(\w*) *=? *simplegui.load_sound\((.*)\)", output_data)
+            m_all = re.findall("{No} *=? *simplegui.load_sound\( *{Pq} *\)".\
+                                   format(No=RNI["No"], Pq=RNI["Pq"]), 
+                               output_data)
             
-            # verify or find source path to each music/sound
+            # verify or find source path of each music/sound
             for m in range(len(m_all)):
                 if m_all[m][1][0] not in ["'", '"']:
-                    m_all[m] = [m_all[m], re.findall("{m} *= *[\"\'](.*)[\"\']".format(
-                                                      m=m_all[m][1]), output_data)[0]]
+                    # if the link is in a list
+                    if "[" in m_all[m][1]:
+                        ref = re.findall("\w+", m_all[m][1])
+                        l = re.findall("{l} *= *\[\s*{Pq}+\s*\]".format(
+                                           l=ref[0], Pq=RNI["Pq"], S=RNI["S"]), 
+                                       output_data, re.S)
+                        l = re.split(" *, *\n? *", l[0])[int(ref[1])][1:-1]
+                        m_all[m] = [m_all[m], l]
+                    
+                    # if the link is the value of a variable
+                    elif "[" not in m_all[m][1]:
+                        m_all[m] = [m_all[m], re.findall("{m} *= *{Pq}".format(
+                                        m=m_all[m][1], Pq=RNI["Pq"]), 
+                                    output_data)[0][1:-1]]
                 else:
                     m_all[m] = [m_all[m], m_all[m][1][1:-1]]
             
             # find longest playing musics/sounds (the largest file size)
             for m in range(len(m_all)):
-                m_size = urllib2.urlopen(m_all[m][1]).info().getheaders("Content-Length")[0]
+                m_size = urllib2.urlopen(
+                             m_all[m][1]).info().getheaders("Content-Length")[0]
                 m_all[m][1] = m_size
             
             m_longest = max(m_all, key=lambda music: int(music[1]))
