@@ -49,7 +49,7 @@ RNI = {
     # PARAMETER: digit, variable, list, operation
 "P"  : "([\w\+\-\*\/\%\.\[\(\]\) ]+)", 
     # PARAMETER COORDINATE: digit, variable, list, operation, tuple
-"Pc" : "([\w\+\-\*\/\%\.\[\(\]\) ,]+)",                   
+"Pc": "(\w+|[\[\(\w\+\-\*\/\%\. ]+,?[\w\+\-\*\/\%\. \]\)]*)", 
     # PARAMETER MULTILINE: digit, variable, list, operation, tuple, multiline
 "Pm" : "(\w+[\[\w\]]+|[\w\+\-\*\/\%\.\[\(\]\)\s,\\\\]+)", 
     # PARAMETER QUOTED: variable, list, quoted string
@@ -236,7 +236,7 @@ class Simplegui2Tkinter:
                                              w=re.escape(w), l=re.escape(l), 
                                              f=re.escape(f)), 
                                      tk_oval_var.format(v=var, s=space, n=name, 
-                                                        c=c, r=r, w=w, l=l, f=fill), 
+                                             c=c, r=r, w=w, l=l, f=fill), 
                                      output_data)
         
         # Line
@@ -266,7 +266,7 @@ class Simplegui2Tkinter:
                                         w=re.escape(p[2]), c=re.escape(p[3]), 
                                         f=re.escape(p[4])), 
                                  tk_poly.format(n=p[0], c=p[1], w=p[2], o=p[3], 
-                                                f=fill), 
+                                        f=fill), 
                                  output_data)
     
     
@@ -555,26 +555,26 @@ class Simplegui2Tkinter:
             
             
             # update all images loading
-            output_data = re.sub("( *)(\w+) *=? *simplegui.load_image\((.*)\)", 
+            output_data = re.sub("{I}{N} *=? *simplegui.load_image\( *{Pq} *\)".\
+                                 format(I=RNI["I"], N=RNI["N"], Pq=RNI["Pq"]), 
                                  "\\1\\2 = Image.open(urllib.urlretrieve(\\3)[0])\n" \
                                  "\\1\\2_displayed = ''\n", 
                                  output_data)
             
             
             # update all images drawing
-            sg_image = "( *)(\w+).draw_image\( *(\w+) *,\s*" \
-                       "([\[\(\w\/\*\+\- ]+ *,? *[\w\/\*\+\- \]\)]*) *,\s*" \
-                       "([\[\(\w\/\*\+\- ]+ *,? *[\w\/\*\+\- \]\)]*) *,\s*" \
-                       "([\[\(\w\/\*\+\- ]+ *,? *[\w\/\*\+\- \]\)]*) *,\s*" \
-                       "([\[\(\w\/\*\+\- ]+ *,? *[\w\/\*\+\- \]\)]*) *,?\s*" \
-                       "([\[\(\w\/\*\+\- ,\]\)]+)? *\)"
+            sg_image = "{I}{N}.draw_image" \
+                       "\( *{N}{S}{Pc}{S}{Pc}{S}{Pc}{S}{Pc}{S}?{P}? *\){M}"
+            sg_img_c = "{i}{c}.draw_image" \
+                       "\( *{n}{S}{sc}{S}{ss}{S}{dc}{S}{ds}{S}?{a}? *\){M}"
+            tk_image = "{i}global {n}_displayed\n" \
+                       "{i}{n}_params = ({im}, {sc}, {ss}, {ds}, {a})\n" \
+                       "{i}{n}_displayed = STconverter_image(*{n}_params)\n" \
+                       "{i}{c}.create_image({dc}, image={n}_displayed)\\1\n"
             
-            tk_image = "{s}global {n}_displayed\n" \
-                       "{s}{n}_params = ({i}, {sc}, {ss}, {ds}, {a})\n" \
-                       "{s}{n}_displayed = STconverter_image(*{n}_params)\n" \
-                       "{s}{c}.create_image({dc}, image={n}_displayed)\n"
-            
-            images = re.findall(sg_image, output_data)
+            images = re.findall(sg_image.format(I=RNI["I"], N=RNI["N"], S=RNI["S"], 
+                                    Pc=RNI["Pc"], P=RNI["P"], M=RNI["M"]), 
+                                output_data)
             
             used_once = []
             
@@ -583,7 +583,7 @@ class Simplegui2Tkinter:
                 angle = i[7] if i[7] else 0
                 
                 # check if the image name is already used (when the same image 
-                # is used for several displays
+                # is used for several displays)
                 if i[2] not in used_once:
                     used_once.append(i[2])
                     name = i[2]
@@ -592,18 +592,19 @@ class Simplegui2Tkinter:
                     extension = ''.join(random.sample("abcdefghij0123456789", 6))
                     name = i[2] + extension
                     # add a global variable
-                    output_data = re.sub("( *)({i}_displayed = ''\n)".format(i=i[2]), 
+                    output_data = re.sub("{I}({im}_displayed = ''\n)".format(
+                                             I=RNI["I"], im=i[2]), 
                                          "\\1\\2" \
                                          "\\1{n}_displayed = ''\n".format(n=name),
                                          output_data)
                 
-                output_data = re.sub("{s}{c}.draw_image\( *{n} *,\s*" \
-                                     "{sc} *,\s*{ss} *,\s*{dc} *,\s*{ds} *,?\s*" \
-                                     "{a}? *\)".format(s=i[0], c=i[1], n=i[2], 
-                                     sc=re.escape(i[3]), ss=re.escape(i[4]), 
-                                     dc=re.escape(i[5]), ds=re.escape(i[6]), a=i[7]), 
-                                     tk_image.format(s=i[0], n=name, i=i[2], sc=i[3], 
-                                     ss=i[4], c=i[1], dc=i[5], ds=i[6], a=angle), 
+                output_data = re.sub(sg_img_c.format(i=i[0], c=i[1], n=i[2], 
+                                         sc=re.escape(i[3]), ss=re.escape(i[4]), 
+                                         dc=re.escape(i[5]), ds=re.escape(i[6]), 
+                                         a=re.escape(i[7]), S=RNI["S"], M=RNI["M"]), 
+                                     tk_image.format(i=i[0], n=name, im=i[2], 
+                                         sc=i[3], ss=i[4], c=i[1], dc=i[5], 
+                                         ds=i[6], a=angle), 
                                      output_data)
     
     
