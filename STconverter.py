@@ -56,6 +56,8 @@ RNI = {
 "Pq" : "([\"\'].+?[\"\']|\w+[\[\(\w\]\)]+)", 
     # SPACE: comma, space, \n, \
 "S"  : "(?: *,[\s\\\]*)", 
+    # COMMENT
+"M"  : "( *#?.*)"
 }
 
 
@@ -105,10 +107,11 @@ class Simplegui2Tkinter:
         
         global output_data
         
-        sg_frame = "{I}{N} *= *simplegui.create_frame\( *{Pq}{S}{P}{S}{P}{S}?{P}? *\)".\
+        sg_frame = "{I}{N} *= *simplegui.create_frame" \
+                   "\( *{Pq}{S}{P}{S}{P}{S}?{P}? *\){M}".\
                    format(I=RNI["I"], N=RNI["N"], Pq=RNI["Pq"], 
-                          S=RNI["S"], P=RNI["P"])
-        tk_frame = "\\1window_root = Tkinter.Tk()\n" \
+                          S=RNI["S"], P=RNI["P"], M=RNI["M"])
+        tk_frame = "\\1window_root = Tkinter.Tk()\\7\n" \
                    "\\1window_root.title(\\3)\n" \
                    "\\1\\2 = Tkinter.Frame(window_root)\n" \
                    "\\1\\2.pack()\n"
@@ -116,9 +119,9 @@ class Simplegui2Tkinter:
         tk_canvas = "\\1canvas = Tkinter.Canvas(\\2, width=\\4, height=\\5)\n" \
                     "\\1canvas.pack(side='right')\n"
         
-        sg_bg = "\w+.set_canvas_background\( *{Pq} *\)".\
-                format(Pq=RNI["Pq"])
-        tk_bg = "\\1canvas.configure(background={})\n"
+        sg_bg = "\w+.set_canvas_background\( *{Pq} *\){M}".\
+                format(Pq=RNI["Pq"], M=RNI["M"])
+        tk_bg = "\\1canvas.configure(background={b}){m}\n"
         
         FRAME_RE = re.compile(sg_frame)
         
@@ -137,12 +140,13 @@ class Simplegui2Tkinter:
         
         # create canvas with size used in "simplegui.create_frame"
         # and with a black background by default
-        bg_color = "'Black'"
+        bg = ("'Black'", "")
         if ".set_canvas_background" in output_data:
-            bg_color = re.findall(sg_bg, output_data)[0]
+            bg = re.findall(sg_bg, output_data)[0]
             output_data = re.sub(sg_bg, '', output_data)
         output_data = FRAME_RE.sub(r'{f}\n{c}{b}'.format(f=tk_frame, c=tk_canvas, 
-                                    b=tk_bg.format(bg_color)), output_data)
+                                    b=tk_bg.format(b=bg[0], m=bg[1])), 
+                                   output_data)
         
         # replace "set_draw_handler" with drawing handler call
         refresh_time = 17 # in ms (66ms~15fps; 33ms~30fps; 17ms~60fps)
@@ -264,14 +268,14 @@ class Simplegui2Tkinter:
         
         global output_data
         
-        sg_button = "{C}.add_button\( *{Pq}{S}{N}{S}?{P}? *\)([ #\w]*)".\
+        sg_button = "{C}.add_button\( *{Pq}{S}{N}{S}?{P}? *\){M}".\
                     format(C=RNI["C"], Pq=RNI["Pq"], S=RNI["S"], N=RNI["N"], 
-                           P=RNI["P"])
-        sg_b_ch =   "{I}(?:\w+ *= *)?{f}.add_button\( *{m}{S}{h}{S}?{s} *\)({r})"
-        tk_b_ws = "\\1{h}_bt = Tkinter.Button({f}, text={m}, command={h}){r}\n" \
+                           P=RNI["P"], M=RNI["M"])
+        sg_b_ch =   "{I}(?:\w+ *= *)?{f}.add_button\( *{m}{S}{h}{S}?{s} *\){M}"
+        tk_b_ws = "\\1{h}_bt = Tkinter.Button({f}, text={m}, command={h})\\2\n" \
                   "\\1{h}_bt.config(width={s})\n" \
                   "\\1{h}_bt.pack()\n"
-        tk_b_ns = "\\1{h}_bt = Tkinter.Button({f}, text={m}, command={h}){r}\n" \
+        tk_b_ns = "\\1{h}_bt = Tkinter.Button({f}, text={m}, command={h})\\2\n" \
                   "\\1{h}_bt.pack()\n"
         
         buttons = re.findall(sg_button, output_data)
@@ -287,17 +291,17 @@ class Simplegui2Tkinter:
                 output_data = re.sub(sg_b_ch.format(I=RNI["I"], f=button[0], 
                                          m=re.escape(button[1]), S=RNI["S"], 
                                          h=button[2], s=re.escape(button[3]), 
-                                         r=re.escape(button[4])),
+                                         M=RNI["M"]),
                                      tk_b_ws.format(f=button[0], m=button[1], 
-                                         h=button[2], s=size, r=button[4]), 
+                                         h=button[2], s=size), 
                                      output_data)
             elif not size:
                 output_data = re.sub(sg_b_ch.format(I=RNI["I"], f=button[0], 
                                          m=re.escape(button[1]), S=RNI["S"], 
                                          h=button[2], s=re.escape(button[3]), 
-                                         r=re.escape(button[4])),
+                                         M=RNI["M"]),
                                      tk_b_ns.format(f=button[0], m=button[1], 
-                                         h=button[2], r=button[4]), 
+                                         h=button[2]), 
                                      output_data)
     
     
@@ -350,7 +354,7 @@ class Simplegui2Tkinter:
         
         if "add_input" in output_data:
             
-            sg_input = "{I}{No} *=? *{C}.add_input\( *{Pq}{S}{N}{S}{P} *\)([ #\w]*)"
+            sg_input = "{I}{No} *=? *{C}.add_input\( *{Pq}{S}{N}{S}{P} *\){M}"
             tk_input = "{i}{n}_lb = Tkinter.Label({f}, text={l})\\1\n" \
                        "{i}{n}_lb.pack()\n" \
                        "{i}{n}_et = Tkinter.Entry({f})\n" \
@@ -363,7 +367,7 @@ class Simplegui2Tkinter:
 
             inputs = re.findall(sg_input.format(I=RNI["I"], No=RNI["No"], 
                                     C=RNI["C"], Pq=RNI["Pq"], S=RNI["S"], 
-                                    N=RNI["N"], P=RNI["P"]), 
+                                    N=RNI["N"], P=RNI["P"], M=RNI["M"]), 
                                 output_data)
             
             for i in inputs:
@@ -383,7 +387,7 @@ class Simplegui2Tkinter:
                 tk_input_size = "int(" + i[5] + "/10)"
                 output_data = re.sub(sg_input.format(I=i[0], No=i[1], C=i[2], 
                                          Pq=re.escape(i[3]), S=RNI["S"], N=i[4], 
-                                         P=re.escape(i[5])), 
+                                         P=re.escape(i[5]), M=RNI["M"]), 
                                      tk_input.format(i=i[0], n=i[4], f=i[2], 
                                          l=i[3], s=tk_input_size), 
                                      output_data)
@@ -645,7 +649,7 @@ class Simplegui2Tkinter:
     
     
     def up_ini(self):
-        """ update the initialization of the event loop """
+        """ update the initialization of the window event loop """
         
         global output_data
         
@@ -653,9 +657,11 @@ class Simplegui2Tkinter:
         if "Tkinter.Frame" not in output_data:
             return
         
-        frame_name = re.findall(r"(\w+) = Tkinter.Frame\(", output_data)
-        START_RE = re.compile(r"{f}.start\(\)".format(f=frame_name[0]))
-        output_data = START_RE.sub("", output_data)
+        frame = re.findall(r"{N} = Tkinter.Frame\(".format(N=RNI["N"]), 
+                           output_data)[0]
+        output_data = re.sub("{f}.start\(\){M}".format(f=frame, M=RNI["M"]), 
+                             "", 
+                             output_data)
         output_data = output_data + "\n\nwindow_root.mainloop()\n"
     
     
