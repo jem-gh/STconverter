@@ -408,29 +408,35 @@ class Simplegui2Tkinter:
         if ".create_timer(" in output_data:
             
             # retrieve all Timer widgets' names
-            timer_names = re.findall("(\w+) ?= ?simplegui.create_timer\(", output_data)
+            timer_names = re.findall("{N} *= *simplegui.create_timer\(".format(
+                                         N=RNI["N"]), 
+                                     output_data)
             
-            for timer_name in timer_names:
+            for t in timer_names:
                 # update timer event handler
-                sg_timer_start = "{n}\.start\(\)".format(n=timer_name)
-                sg_timer_stop =  "{n}\.stop\(\)".format(n=timer_name)
-                tk_timer_start = "{n}_st(True)".format(n=timer_name)
-                tk_timer_stop =  "{n}_st(False)".format(n=timer_name)
+                sg_timer_start = "{}\.start\(\)".format(t)
+                sg_timer_stop =  "{}\.stop\(\)".format(t)
+                tk_timer_start = "{}_st(True)".format(t)
+                tk_timer_stop =  "{}_st(False)".format(t)
                 output_data = re.sub(sg_timer_start, tk_timer_start, output_data)
                 output_data = re.sub(sg_timer_stop, tk_timer_stop, output_data)
                 
                 # update timer
-                sg_timer = "{n} *= *simplegui.create_timer\( *(\w+) *,[\s\\\]*(\w+) *\)".format(n=timer_name)
-                tk_timer = "{n}_status = False\n\n" \
-                           "def {n}_st(status):\n" \
-                           "    global {n}_status\n" \
-                           "    {n}_status = status\n\n" \
-                           "def {n}_fn():\n" \
-                           "    window_root.after(\\1, {n}_fn)\n" \
-                           "    if {n}_status:\n" \
-                           "        \\2()\n\n" \
-                           "{n}_fn()\n".format(n=timer_name)
-                output_data = re.sub(sg_timer, tk_timer, output_data)
+                sg_timer = "{I}{t} *= *simplegui.create_timer"\
+                           "\( *{P}{S}{N} *\){M}"
+                tk_timer = "\\1{t}_status = False\n\n" \
+                           "\\1def {t}_st(status):\n" \
+                           "\\1    global {t}_status\n" \
+                           "\\1    {t}_status = status\n\n" \
+                           "\\1def {t}_fn():\\4\n" \
+                           "\\1    window_root.after(\\2, {t}_fn)\n" \
+                           "\\1    if {t}_status:\n" \
+                           "\\1        \\3()\n\n" \
+                           "\\1{t}_fn()\n"
+                output_data = re.sub(sg_timer.format(I=RNI["I"], t=t, P=RNI["P"], 
+                                         S=RNI["S"], N=RNI["N"], M=RNI["M"]), 
+                                     tk_timer.format(t=t), 
+                                     output_data)
     
     
     def up_music(self):
