@@ -131,12 +131,18 @@ class Simplegui2Tkinter:
             return
         
         
-        # find name of drawing handler
-        draw_handler = re.findall(r'\w+.set_draw_handler\( *(.+) *\)', output_data)[0]
-        
         # update drawing handler
-        DH_RE = re.compile(r'( *)def ({n})\( *(\w+) *\): *\n(\s+)'.format(n=draw_handler))
-        output_data = DH_RE.sub(r'\1def \2(\3):\n\4\3.delete("all")\n\4\n\4', output_data)
+        sg_drawing_handler = "{I}def {n}\( *{N} *\):\n"
+        tk_drawing_handler = "\\1def {n}(\\2):\n" \
+                             "\\1    \\2.delete('all')\n" \
+                             "\\1    \n"
+        
+        draw_n = re.findall('\w+.set_draw_handler\( *{N} *\)'.format(N=RNI["N"]), 
+                            output_data)[0]
+        output_data = re.sub(sg_drawing_handler.format(I=RNI["I"], n=draw_n, 
+                                 N=RNI["N"]), 
+                             tk_drawing_handler.format(n=draw_n), 
+                             output_data)
         
         # create canvas with size used in "simplegui.create_frame"
         # and with a black background by default
@@ -151,11 +157,12 @@ class Simplegui2Tkinter:
         # replace "set_draw_handler" with drawing handler call
         refresh_time = 17 # in ms (66ms~15fps; 33ms~30fps; 17ms~60fps)
         
-        dh_old = "( *)\w+.set_draw_handler\( *{h} *\)".format(h=draw_handler)
-        dh_new = "\\1def refresh_canvas():\n" \
+        dh_old = "{I}\w+.set_draw_handler\( *{h} *\){M}".format(
+                     I=RNI["I"], h=draw_n, M=RNI["M"])
+        dh_new = "\\1def refresh_canvas():\\2\n" \
                  "\\1    {h}(canvas)\n" \
                  "\\1    window_root.after({t}, refresh_canvas)\n\n" \
-                 "\\1refresh_canvas()\n".format(h=draw_handler, t=refresh_time)
+                 "\\1refresh_canvas()\n".format(h=draw_n, t=refresh_time)
         output_data = re.sub(dh_old, dh_new, output_data)
         
         
