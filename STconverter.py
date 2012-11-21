@@ -49,11 +49,11 @@ RNI = {
     # PARAMETER: digit, variable, list, operation
 "P"  : "([\w\+\-\*\/\%\.\[\(\]\) ]+)", 
     # PARAMETER COORDINATE: digit, variable, list, operation, tuple
-"Pc": "(\w+|[\[\(\w\+\-\*\/\%\. ]+,?[\w\+\-\*\/\%\. \]\)]*)", 
+"Pc" : "(\w+|[\[\(\w\+\-\*\/\%\. ]+,?[\w\+\-\*\/\%\. \]\)]*)", 
     # PARAMETER MULTILINE: digit, variable, list, operation, tuple, multiline
 "Pm" : "(\w+[\[\w\]]+|[\w\+\-\*\/\%\.\[\(\]\)\s,\\\\]+)", 
     # PARAMETER QUOTED: variable, list, quoted string
-"Pq" : "([\"\'].+?[\"\']|\w+[\[\(\w\]\)]+)", 
+"Pq" : "([\"].*?[\"]|[\'].*?[\']|\w+[\[\(\w\]\)]+)", 
     # SPACE: comma, space, \n, \
 "S"  : "(?: *,[\s\\\]*)", 
     # COMMENT
@@ -317,9 +317,9 @@ class Simplegui2Tkinter:
         
         global output_data
         
-        sg_label =    "{No} *=? *{C}.add_label\( *{Pq}{S}?{P}? *\)".\
+        sg_label =    "{No} *=? *{C}.add_label\( *{Pq}{S}?{P}? *\){M}\n".\
                       format(No=RNI["No"], C=RNI["C"], Pq=RNI["Pq"], 
-                             S=RNI["S"], P=RNI["P"])
+                             S=RNI["S"], P=RNI["P"], M=RNI["M"])
         sg_label_nv  = "{I}{n} *=? *{f}.add_label\( *{m}{S}?{s} *\)"
         sg_label_wv  = "{I}{n} *= *{f}.add_label\( *{m}{S}?{s} *\)"
         tk_label_nv = "\\1Tkinter.Label({f}, text={m}).pack()"
