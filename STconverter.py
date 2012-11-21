@@ -618,46 +618,52 @@ class Simplegui2Tkinter:
         
         global output_data
         
+        # find and update each pressed-key call to handler and handler
+        sg_k_down = "{I}{C}.set_keydown_handler\( *{N} *\){M}"
+        tk_k_down = '\\1{c}.bind("<Key>", {e}){m}\n' \
+                    '\\1{c}.focus_set()\n'
         
-        # event handler when a key is pressed
-        
-        # find function(s) called by event handler when a key is pressed
-        key_pressed = "\w+.set_keydown_handler\((\w+)\)"
-        key_pressed_eh_names = re.findall(key_pressed, output_data)
-        
-        # for each event handler, update event handler and associated function
-        for eh_name in key_pressed_eh_names:
+        k_down = re.findall(sg_k_down.format(I=RNI["I"], C=RNI["C"], N=RNI["N"], 
+                                M=RNI["M"]), 
+                            output_data)
+        for eh in k_down:
             # retrieve parameter name used by event handler
-            eh_param = re.findall(r"def {n}\((\w+)\)".format(n=eh_name), output_data)[0]
-            # retrieve entire event handler to modify it
-            eh_old = re.findall("def {n}\(\w+\):\n(?:    .+\n)+".format(n=eh_name), 
-                               output_data)[0]
-            # update the capturing of key event
-            eh_new = re.sub("chr\(({p})\)".format(p=eh_param), "\\1.keysym", eh_old)
+            eh_param = re.findall("def {e}\( *{N} *\)".format(e=eh[2], N=RNI["N"]), 
+                                  output_data)[0]
+            # retrieve entire event handler to update the capturing of key event
+            eh_old = re.findall(" *def {e}\( *{p} *\):.*\n" \
+                                "(?: *.+\n)+".format(e=eh[2], p=eh_param), 
+                                output_data)[0]
+            eh_new = re.sub("chr\( *({p}) *\)".format(p=eh_param), 
+                            "\\1.keysym", 
+                            eh_old)
             # update output_data
             output_data = re.sub(re.escape(eh_old), eh_new, output_data)
-            
-            # update event handler
-            output_data = re.sub(r"(\w+).set_keydown_handler\((\w+)\)", 
-                                 r'\1.bind("<Key>", \2)\n' \
-                                  '\\1.focus_set()\n', 
+            # update call to handler
+            output_data = re.sub(sg_k_down.format(I=RNI["I"], C=eh[1], N=eh[2], 
+                                     M=re.escape(eh[3])), 
+                                 tk_k_down.format(c=eh[1], e=eh[2], m=eh[3]), 
                                  output_data)
         
-        # find function(s) called by event handler when a key is released
-        output_data = re.sub(r"(\w+).set_keyup_handler\((\w+)\)",
-                             r'\1.bind("<KeyRelease>", \2)\n',
-                             output_data)
+        # find and update each released-key call to event handler
+        sg_k_up = "{C}.set_keyup_handler\( *{N} *\){M}".format(
+                      C=RNI["C"], N=RNI["N"], M=RNI["M"])
+        tk_k_up = '\\1.bind("<KeyRelease>", \\2)\\3\n'
+        output_data = re.sub(sg_k_up, tk_k_up, output_data)
         
         
         # update other key events
         
         # recognition of a specific pressed key
-        keys = re.findall(r"(\w+) ?== ?simplegui.KEY_MAP\[[\"\'](\w+)[\"\']\]", 
-                          output_data)
-        for key in keys:
-            keymap = key[1] if len(key[1]) == 1 else key[1].title()
-            output_data = re.sub("{p} ?== ?simplegui.KEY_MAP\[[\"\']{k}[\"\']\]".format(p=key[0], k=key[1]), 
-                                 '{p}.keysym == "{k}"'.format(p=key[0], k=keymap),
+        sg_k_spe = "{N} *== *simplegui.KEY_MAP\[{Pq}\]"
+        tk_k_spe = '{p}.keysym == "{k}"'
+        
+        keys = re.findall(sg_k_spe.format(N=RNI["N"], Pq=RNI["Pq"]), output_data)
+        
+        for k in keys:
+            keymap = k[1][1:-1] if len(k[1][1:-1]) == 1 else k[1][1:-1].title()
+            output_data = re.sub(sg_k_spe.format(N=k[0], Pq=k[1]), 
+                                 tk_k_spe.format(p=k[0], k=keymap),
                                  output_data)
     
     
