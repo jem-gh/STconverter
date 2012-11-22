@@ -732,14 +732,20 @@ class Window_App:
     def __init__(self, master):
         self.master = master
         
-        self.code_input = ""
-        self.code_input_name = ""
+        self.input_data = ""
+        self.input_path = ""
+        self.input_filename = ""
+        
+        self.output_path = ""
+        self.output_filename = ""
+        
+        self.isWindows = False
         
         self.main()
     
     
     def main(self):
-        """ core of the GUI """
+        """ core of the application GUI """
         
         # Frame
         frame = Tkinter.Frame(self.master)
@@ -793,72 +799,96 @@ class Window_App:
     
     def file_open(self):
         """ open a file dialog to select the file to convert, update automatically 
-            contents of "entry_open" and "entry_save" to reflect selected file and 
-            proposed an optional name for the output file """
+            contents of "entry_open" with the selected file and "entry_save" with 
+            a default name for the output file """
         
         input_loaded = tkFileDialog.askopenfile(title="Choose a file to convert")
         
         if input_loaded:
-            # retrieve file data, path, and name
-            self.code_input = input_loaded.read()
-            input_path = input_loaded.name
-            self.code_input_name = self.extract_input_name(input_path)
+            # retrieve input file data, path, and name
+            self.input_data = input_loaded.read()
+            self.input_path, self.input_filename = self.pathNfilename(
+                                                            input_loaded.name)
             input_loaded.close()
+            
+            # create a default output file path and name
+            self.output_path = self.input_path
+            self.output_filename = self.update_name(self.input_filename, ".py", 
+                                                    tag="(converted)")
             
             # add path of the selected file to "entry_open"
             self.entry_open.delete(0, Tkinter.END)
-            self.entry_open.insert(0, input_path)
+            self.entry_open.insert(0, self.input_path + self.input_filename)
             
-            # add path and optional name of the output file to "entry_save"
+            # add path and name of the output file to "entry_save"
             self.entry_save.delete(0, Tkinter.END)
-            self.entry_save.insert(0, (input_path[:-3]+"(converted).py"))
+            self.entry_save.insert(0, (self.output_path + self.output_filename))
     
     
     def directory_open(self):
-        """ select or change the destination directory to save the converted file """
+        """ select or change the destination directory of the output file """
         
-        dir_save = tkFileDialog.askdirectory(title="Select a destination directory")
-        
-        if dir_save:
-            # add the path and optional name of the output file to "entry_save"
+        d = tkFileDialog.askdirectory(title="Select a destination directory")
+        if d:
+            # update the path of the output file to "entry_save"
+            div = "/" if not self.isWindows else "\\"
+            self.output_path = d + div
             self.entry_save.delete(0, Tkinter.END)
-            self.entry_save.insert(0, (dir_save+"/"+self.code_input_name+"(converted).py"))
+            self.entry_save.insert(0, (self.output_path + self.output_filename))
     
     
-    def extract_input_name(self, input_path):
-        """ extract the name of a file from the entire file path """
-        return re.findall(r'([\w ()-]+)(?:\.py)?$', input_path)[0]
+    def pathNfilename(self, full_path):
+        """ separate and return the path and the filename from a full path """
+        
+        # on Linux and Mac OS
+        if "/" in full_path:
+            return re.findall(r"(.*/)(.+)", full_path)[0]
+        # on Windows
+        if "\\" in full_path:
+            self.isWindows = True
+            return re.findall(r"(.*\\)(.+)", full_path)[0]
+    
+    
+    def update_name(self, filename, extension, tag=""):
+        """ verify that a filename use the correct extension (otherwise add it) 
+            and, if specified, insert a tag between the name and the extension """
+        
+        if filename[-len(extension):] == extension:
+            return filename[:-len(extension)] + tag + extension
+        
+        else:
+            return filename + tag + extension
     
     
     def convert_st(self):
         """ handle the conversion from SimpleGUI to Tkinter, and save the result """
         
         # check first if a file was selected and that it contains any data
-        if not self.code_input:
-            nofile_text = "Please, select first a file to convert with data in it."
+        if not self.input_data:
+            nofile_text = "Please, choose a file to convert with data in it."
             tkMessageBox.showinfo("No file selected!", message=nofile_text)
             return
         
         # conversion of the input file by calling the Simplegui2Tkinter class
-        code_output = Simplegui2Tkinter(self.code_input).convert()
+        output_data = Simplegui2Tkinter(self.input_data).convert()
         
         # return an error message if the input file has no SimpleGUI module
-        if "___NoSimpleguiFound!___" in code_output:
+        if "___NoSimpleguiFound!___" in output_data:
             error_text = "Wrong file? No SimpleGUI module was found in this file..."
             tkMessageBox.showinfo("Done!", message=error_text)
             return
         
         # save the output file
-        test_file = open(self.entry_save.get(), "w")
-        test_file.write(code_output)
-        test_file.close()
+        output_file = open(self.entry_save.get(), "w")
+        output_file.write(output_data)
+        output_file.close()
         
-        # clear "entry_open" and "entry_save" and signaled user the work is done
-        self.entry_open.delete(0, Tkinter.END)
-        self.entry_save.delete(0, Tkinter.END)
-        
+        # signal user the work is done and clear "entry_open" and "entry_save"
         finished_text = "SUCCESS! Conversion from SimpleGUI to Tkinter finished!"
         tkMessageBox.showinfo("Done!", message=finished_text)
+        
+        self.entry_open.delete(0, Tkinter.END)
+        self.entry_save.delete(0, Tkinter.END)
 
 
 
