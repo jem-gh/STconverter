@@ -2,9 +2,8 @@
 
 
 ###############################################################################
-# SimpleGUI/Tkinter Converter (STconverter.py) is a little software aiming to 
-# convert simple Python scripts written for SimpleGUI to work with Tkinter GUI 
-# module instead, and vice versa.
+# SimpleGUI/Tkinter Converter (STconverter) is a little software aiming to 
+# convert Python scripts written for SimpleGUI to work with Tkinter GUI instead.
 # 
 # "Tkinter is Python's de-facto standard GUI (Graphical User Interface) package"
 # (http://wiki.python.org/moin/TkInter)
@@ -14,11 +13,10 @@
 # online Coursera course "An Introduction to Interactive Programming in Python" 
 # by Joe Warren, Scott Rixner, John Greiner, and Stephen Wong (Rice University) 
 # 
-# For latest version of SimpleGUI/Tkinter Converter or detailed changelog, visit 
-# the repository on Github: 
+# For the latest version of STConverter visit the repository on Github: 
 # https://github.com/jem-gh/STconverter
 # 
-# SimpleGUI/Tkinter Converter is developed by Jean-Etienne Morlighem
+# STconverter is developed by Jean-Etienne Morlighem
 ###############################################################################
 
 
@@ -26,12 +24,6 @@
 import re
 import urllib2      # used by up_music()
 import random       # used by up_image()
-
-
-
-# global variables
-input_data = ""
-input_name = ""
 
 
 
@@ -738,15 +730,24 @@ import Tkinter, tkFileDialog, tkMessageBox
 
 class Window_App:
     def __init__(self, master):
+        self.master = master
+        
+        self.code_input = ""
+        self.code_input_name = ""
+        
+        self.main()
+    
+    
+    def main(self):
         """ core of the GUI """
         
         # Frame
-        frame = Tkinter.Frame(master)
+        frame = Tkinter.Frame(self.master)
         frame.grid()
         frame.rowconfigure(0, minsize=40)
         frame.rowconfigure(3, minsize=40)
         frame.rowconfigure(5, minsize=60)
-        frame.rowconfigure(7, minsize=60)
+        frame.rowconfigure(6, minsize=60)
         
         title_text = "SimpleGUI/Tkinter converter"
         label_title = Tkinter.Label(frame, text=title_text)
@@ -777,22 +778,17 @@ class Window_App:
         self.button_save.grid(row=4, column=1, sticky="W", padx=10)
         
         
-        # buttons to initiate conversion
+        # button to initiate conversion
         st_text = "SimpleGUI > Tkinter Convert!"
         self.button_convert_st = Tkinter.Button(frame, text=st_text, width=40, 
                                                 command=self.convert_st)
         self.button_convert_st.grid(row=5, columnspan=2, sticky="S")
         
-        ts_text = 'Tkinter > SimpleGUI ... coming "soon"!'
-        self.button_convert_ts = Tkinter.Button(frame, text=ts_text, width=40, 
-                                                command=None, bg="grey")
-        self.button_convert_ts.grid(row=6, columnspan=2, sticky="S")
-        
         
         # quit button
         self.button_close = Tkinter.Button(frame, text="Quit", 
                                            command=frame.quit)
-        self.button_close.grid(row=7, column=1, sticky="S", pady=5, padx=10)
+        self.button_close.grid(row=6, column=1, sticky="S", pady=5, padx=10)
     
     
     def file_open(self):
@@ -800,15 +796,13 @@ class Window_App:
             contents of "entry_open" and "entry_save" to reflect selected file and 
             proposed an optional name for the output file """
         
-        global input_data, input_name
-        
         input_loaded = tkFileDialog.askopenfile(title="Choose a file to convert")
         
         if input_loaded:
             # retrieve file data, path, and name
-            input_data = input_loaded.read()
+            self.code_input = input_loaded.read()
             input_path = input_loaded.name
-            input_name = self.extract_input_name(input_path)
+            self.code_input_name = self.extract_input_name(input_path)
             input_loaded.close()
             
             # add path of the selected file to "entry_open"
@@ -828,7 +822,7 @@ class Window_App:
         if dir_save:
             # add the path and optional name of the output file to "entry_save"
             self.entry_save.delete(0, Tkinter.END)
-            self.entry_save.insert(0, (dir_save+"/"+input_name+"(converted).py"))
+            self.entry_save.insert(0, (dir_save+"/"+self.code_input_name+"(converted).py"))
     
     
     def extract_input_name(self, input_path):
@@ -840,13 +834,13 @@ class Window_App:
         """ handle the conversion from SimpleGUI to Tkinter, and save the result """
         
         # check first if a file was selected and that it contains any data
-        if not input_data:
+        if not self.code_input:
             nofile_text = "Please, select first a file to convert with data in it."
             tkMessageBox.showinfo("No file selected!", message=nofile_text)
             return
         
         # conversion of the input file by calling the Simplegui2Tkinter class
-        code_output = Simplegui2Tkinter(input_data).convert()
+        code_output = Simplegui2Tkinter(self.code_input).convert()
         
         # return an error message if the input file has no SimpleGUI module
         if "___NoSimpleguiFound!___" in code_output:
