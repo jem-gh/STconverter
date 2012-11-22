@@ -5,9 +5,8 @@
 ###############################################################################
 
 ###############################################################################
-# SimpleGUI/Tkinter Converter (STconverter.py) is a little software aiming to 
-# convert simple Python scripts written for SimpleGUI to work with Tkinter GUI 
-# module instead (and in the future, vice versa).
+# SimpleGUI/Tkinter Converter (STconverter) is a little software aiming to 
+# convert Python scripts written for SimpleGUI to work with Tkinter GUI instead.
 # 
 # "Tkinter is Python's de-facto standard GUI (Graphical User Interface) package"
 # (http://wiki.python.org/moin/TkInter)
@@ -17,8 +16,7 @@
 # online Coursera course "An Introduction to Interactive Programming in Python" 
 # by Joe Warren, Scott Rixner, John Greiner, and Stephen Wong (Rice University) 
 # 
-# For the latest version of SimpleGUI/Tkinter Converter or detailed changelog, 
-# visit the repository on Github: 
+# For the latest version of STConverter visit the repository on Github: 
 # https://github.com/jem-gh/STconverter
 # 
 # STconverter is developed by Jean-Etienne Morlighem
@@ -28,9 +26,20 @@
 
 1. REQUIREMENTS
 
+1.1. To run STconverter
+
 - Python & Tkinter: STconverter will need Python installed on your machine with 
 the Tkinter module (generally installed by default with Python) to run correctly.
 http://www.python.org/download/
+
+
+1.2. To run your program on your machine once converted
+
+A simple rule of thumb is:
+			Additional module(s)	Works with Python
+program			/			2.7 or 3
+program with music	pygame			2.7 or 3
+program with image	PIL			2.7 only
 
 - Music: if your SimpleGUI program plays music, you will need in addition to have 
 pygame installed on your machine to run your program (but is not required for the 
@@ -60,15 +69,26 @@ by typing in terminal:
 
 	./Path_To_The_Directory_Where_It_Is_Located/STconverter.py
 
+or if STconverter is in your current folder:
+
+	./STconverter.py
+
 The GUI will then start. 
 
 
 
-4. TESTED ON... AND KNOWN ISSUES
+4. MAJOR KNOWN ISSUES
+
+- Global Variables: SimpleGUI handles very well global variables which were 
+assigned "locally" in a function. 
+
+- Comments written inside multiline SimpleGUI expressions (as for example a 
+canvas.draw_polyline() written in multiline) are not supported. (however, 
+comments written at the end of such expressions is not an issue)
+
+
+
+5. TESTED ON...
 
 So far, it has been tested on:
 - Linux with Python 2.7.3, pygame 1.9.1, and PIL 1.1.7
-
-Unfortunately, the converted program won't work with Python 3 if it uses 
-images, as it requires the Python Imaging Library (PIL).
-
