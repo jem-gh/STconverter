@@ -548,29 +548,31 @@ class Simplegui2Tkinter:
         # image = source image retrieved from Internet 
         # s_coor, s_size = coordinates (x, y) and size (width, height) 
         #                  in pixels of a selection of the source image 
-        # d_size = size (width, height) in pixels on the canvas of the 
-        #          selected part of the image 
+        # d_coor, d_size = coordinates (x, y) and size (width, height) 
+        #                  in pixels of the selected part of the image 
+        #                  on the canvas 
         # a = angle in radians of clockwise rotation around its center 
+        # c = canvas
         cl = "class STconverter_image:\n" \
              "    def __init__(self, image):\n" \
              "        self.img = image\n" \
              "        self.tiles = {}\n" \
              "    \n" \
-             "    def update(self, s_coor, s_size, d_size, a):\n" \
+             "    def update(self, s_coor, s_size, d_size, a, ID):\n" \
              "        x1, y1 = (s_coor[0]-s_size[0]/2), (s_coor[1]-s_size[1]/2)\n" \
              "        x2, y2 = (s_coor[0]+s_size[0]/2), (s_coor[1]+s_size[1]/2)\n" \
              "        img_croped = self.img.crop((int(x1), int(y1), int(x2), int(y2)))\n" \
              "        img_resized = img_croped.resize(d_size)\n" \
              "        img_rotated = img_resized.rotate(-a)\n" \
-             "        ID = self.create_ID([s_coor, s_size])\n" \
              "        self.tiles[ID] = ImageTk.PhotoImage(img_rotated)\n" \
              "    \n" \
              "    def create_ID(self, params):\n" \
              "        return ','.join(str(param) for param in params)\n" \
              "    \n" \
-             "    def draw(self, canvas, pos, s_coor, s_size):\n" \
+             "    def draw(self, c, s_coor, s_size, d_coor, d_size, a):\n" \
              "        ID = self.create_ID([s_coor, s_size])\n" \
-             "        canvas.create_image(pos, image=self.tiles[ID])\n\n"
+             "        self.update(s_coor, s_size, d_size, a, ID)\n" \
+             "        canvas.create_image(d_coor, image=self.tiles[ID])\n\n"
         
         if "urllib" in self.code:
             self.code = re.sub(m_url, w_url + cl, self.code)
@@ -582,7 +584,7 @@ class Simplegui2Tkinter:
         self.code = re.sub("{I}{N} *=? *simplegui.load_image\( *{Pq} *\)".\
                                format(I=RNI["I"], N=RNI["N"], Pq=RNI["Pq"]), 
                            "\\1\\2 = Image.open(urllib.urlretrieve(\\3)[0])\n" \
-                           "\\1\\2_displayed = STconverter_image(\\2)\n", 
+                           "\\1\\2_obj = STconverter_image(\\2)\n", 
                            self.code)
         
         
@@ -591,9 +593,7 @@ class Simplegui2Tkinter:
                    "\( *{N}{S}{Pc}{S}{Pc}{S}{Pc}{S}{Pc}{S}?{P}? *\){M}"
         sg_img_c = "{i}{c}.draw_image" \
                    "\( *{n}{S}{sc}{S}{ss}{S}{dc}{S}{ds}{S}?{a}? *\){M}"
-        tk_image = "{i}{n}_params = ({sc}, {ss}, {ds}, {a})\n" \
-                   "{i}{n}_displayed.update(*{n}_params)\n" \
-                   "{i}{n}_displayed.draw({c}, {dc}, {sc}, {ss})\\1\n"
+        tk_image = "{i}{n}_obj.draw({c}, {sc}, {ss}, {dc}, {ds}, {a})\\1\n"
         
         images = re.findall(sg_image.format(I=RNI["I"], N=RNI["N"], S=RNI["S"], 
                                 Pc=RNI["Pc"], P=RNI["P"], M=RNI["M"]), 
@@ -605,8 +605,8 @@ class Simplegui2Tkinter:
                                    sc=re.escape(i[3]), ss=re.escape(i[4]), 
                                    dc=re.escape(i[5]), ds=re.escape(i[6]), 
                                    a=re.escape(i[7]), S=RNI["S"], M=RNI["M"]), 
-                               tk_image.format(i=i[0], n=i[2], sc=i[3], ss=i[4], 
-                                   ds=i[6], a=angle, c=i[1], dc=i[5]), 
+                               tk_image.format(i=i[0], n=i[2], c=i[1], sc=i[3], 
+                                   ss=i[4], dc=i[5], ds=i[6], a=angle), 
                                self.code)
     
     
