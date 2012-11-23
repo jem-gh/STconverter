@@ -558,21 +558,24 @@ class Simplegui2Tkinter:
              "        self.img = image\n" \
              "        self.tiles = {}\n" \
              "    \n" \
-             "    def update(self, s_coor, s_size, d_size, a, ID):\n" \
+             "    def update(self, s_coor, s_size, d_size, d, ID):\n" \
              "        x1, y1 = (s_coor[0]-s_size[0]/2), (s_coor[1]-s_size[1]/2)\n" \
              "        x2, y2 = (s_coor[0]+s_size[0]/2), (s_coor[1]+s_size[1]/2)\n" \
-             "        img_croped = self.img.crop((int(x1), int(y1), int(x2), int(y2)))\n" \
-             "        img_resized = img_croped.resize(d_size, resample=Image.BILINEAR)\n" \
-             "        rad = a * 180 / 3.1416\n" \
-             "        img_rotated = img_resized.rotate(-rad, resample=Image.BICUBIC, expand=1)\n" \
-             "        self.tiles[ID] = ImageTk.PhotoImage(img_rotated)\n" \
+             "        processed = self.img.crop((int(x1), int(y1), int(x2), int(y2)))\n" \
+             "        if d_size != s_size:\n" \
+             "            processed = processed.resize(d_size, resample=Image.BILINEAR)\n" \
+             "        if d:\n" \
+             "            processed = processed.rotate(-d, resample=Image.BICUBIC, expand=1)\n" \
+             "        self.tiles[ID] = ImageTk.PhotoImage(processed)\n" \
              "    \n" \
              "    def create_ID(self, params):\n" \
              "        return ','.join(str(param) for param in params)\n" \
              "    \n" \
              "    def draw(self, c, s_coor, s_size, d_coor, d_size, a):\n" \
-             "        ID = self.create_ID([s_coor, s_size, d_coor, d_size])\n" \
-             "        self.update(s_coor, s_size, d_size, a, ID)\n" \
+             "        d = int((a * 180 / 3.1416) % 360)\n" \
+             "        ID = self.create_ID([s_coor, s_size, d_coor, d_size, d])\n" \
+             "        if ID not in self.tiles:\n" \
+             "            self.update(s_coor, s_size, d_size, d, ID)\n" \
              "        canvas.create_image(d_coor, image=self.tiles[ID])\n\n"
         
         if "urllib" in self.code:
