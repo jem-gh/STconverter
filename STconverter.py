@@ -435,7 +435,7 @@ class Simplegui2Tkinter:
                        "\\1    global {t}_status\n" \
                        "\\1    {t}_status = status\n\n" \
                        "\\1def {t}_fn():\\4\n" \
-                       "\\1    window_root.after(\\2, {t}_fn)\n" \
+                       "\\1    window_root.after(int(\\2), {t}_fn)\n" \
                        "\\1    if {t}_status:\n" \
                        "\\1        \\3()\n\n" \
                        "\\1{t}_fn()\n"
