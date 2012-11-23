@@ -539,36 +539,50 @@ class Simplegui2Tkinter:
         m_tk =  "(import +.*Tkinter.*\n)"
         m_url = "(import +.*urllib.*\n)"
         n_url = "\\1import urllib\n" \
-                "from PIL import Image, ImageTk\n"
-        w_url = "\\1from PIL import Image, ImageTk\n"
+                "from PIL import Image, ImageTk\n\n"
+        w_url = "\\1from PIL import Image, ImageTk\n\n"
         
-        # function which will process all images in the converted file, and 
-        # return images Tkinter-compatible, with:
-        # img = source image retrieved from Internet 
-        # src_coor, src_size = coordinates (x, y) and size (width, height) 
-        #                      in pixels of a selection of the source image 
-        # dest_size = size (width, height) in pixels on the canvas of the 
-        #             selected part of the image 
+        # Class added to the converted file if images are used in the program. 
+        # The class will store, process, and draw images and the parts/tiles 
+        # derived from them in a Tkinter-compatible manner, with: 
+        # image = source image retrieved from Internet 
+        # s_coor, s_size = coordinates (x, y) and size (width, height) 
+        #                  in pixels of a selection of the source image 
+        # d_size = size (width, height) in pixels on the canvas of the 
+        #          selected part of the image 
         # a = angle in radians of clockwise rotation around its center 
-        fn = "\ndef STconverter_image(img, src_coor, src_size, dest_size, a):\n" \
-             "    x1, y1 = (src_coor[0]-src_size[0]/2), (src_coor[1]-src_size[1]/2)\n" \
-             "    x2, y2 = (src_coor[0]+src_size[0]/2), (src_coor[1]+src_size[1]/2)\n" \
-             "    image_croped = img.crop((int(x1), int(y1), int(x2), int(y2)))\n" \
-             "    image_resized = image_croped.resize(dest_size)\n" \
-             "    image_rotated = image_resized.rotate(-a)\n" \
-             "    return ImageTk.PhotoImage(image_rotated)\n\n"
+        cl = "class STconverter_image:\n" \
+             "    def __init__(self, image):\n" \
+             "        self.img = image\n" \
+             "        self.tiles = {}\n" \
+             "    \n" \
+             "    def update(self, s_coor, s_size, d_size, a):\n" \
+             "        x1, y1 = (s_coor[0]-s_size[0]/2), (s_coor[1]-s_size[1]/2)\n" \
+             "        x2, y2 = (s_coor[0]+s_size[0]/2), (s_coor[1]+s_size[1]/2)\n" \
+             "        img_croped = self.img.crop((int(x1), int(y1), int(x2), int(y2)))\n" \
+             "        img_resized = img_croped.resize(d_size)\n" \
+             "        img_rotated = img_resized.rotate(-a)\n" \
+             "        ID = self.create_ID([s_coor, s_size])\n" \
+             "        self.tiles[ID] = ImageTk.PhotoImage(img_rotated)\n" \
+             "    \n" \
+             "    def create_ID(self, params):\n" \
+             "        return ','.join(str(param) for param in params)\n" \
+             "    \n" \
+             "    def draw(self, canvas, pos, s_coor, s_size):\n" \
+             "        ID = self.create_ID([s_coor, s_size])\n" \
+             "        canvas.create_image(pos, image=self.tiles[ID])\n\n"
         
         if "urllib" in self.code:
-            self.code = re.sub(m_url, w_url+fn, self.code)
+            self.code = re.sub(m_url, w_url + cl, self.code)
         else:
-            self.code = re.sub(m_tk, n_url+fn, self.code)
+            self.code = re.sub(m_tk, n_url + cl, self.code)
         
         
         # update all images loading
         self.code = re.sub("{I}{N} *=? *simplegui.load_image\( *{Pq} *\)".\
                                format(I=RNI["I"], N=RNI["N"], Pq=RNI["Pq"]), 
                            "\\1\\2 = Image.open(urllib.urlretrieve(\\3)[0])\n" \
-                           "\\1\\2_displayed = ''\n", 
+                           "\\1\\2_displayed = STconverter_image(\\2)\n", 
                            self.code)
         
         
@@ -577,43 +591,22 @@ class Simplegui2Tkinter:
                    "\( *{N}{S}{Pc}{S}{Pc}{S}{Pc}{S}{Pc}{S}?{P}? *\){M}"
         sg_img_c = "{i}{c}.draw_image" \
                    "\( *{n}{S}{sc}{S}{ss}{S}{dc}{S}{ds}{S}?{a}? *\){M}"
-        tk_image = "{i}global {n}_displayed\n" \
-                   "{i}{n}_params = ({im}, {sc}, {ss}, {ds}, {a})\n" \
-                   "{i}{n}_displayed = STconverter_image(*{n}_params)\n" \
-                   "{i}{c}.create_image({dc}, image={n}_displayed)\\1\n"
+        tk_image = "{i}{n}_params = ({sc}, {ss}, {ds}, {a})\n" \
+                   "{i}{n}_displayed.update(*{n}_params)\n" \
+                   "{i}{n}_displayed.draw({c}, {dc}, {sc}, {ss})\\1\n"
         
         images = re.findall(sg_image.format(I=RNI["I"], N=RNI["N"], S=RNI["S"], 
                                 Pc=RNI["Pc"], P=RNI["P"], M=RNI["M"]), 
                             self.code)
         
-        used_once = []
-        
         for i in images:
-            # check angle
             angle = i[7] if i[7] else 0
-            
-            # check if the image name is already used (when the same image 
-            # is used for several displays)
-            if i[2] not in used_once:
-                used_once.append(i[2])
-                name = i[2]
-            else:
-                # give a new name
-                extension = ''.join(random.sample("abcdefghij0123456789", 6))
-                name = i[2] + extension
-                # add a global variable
-                self.code = re.sub("{I}({im}_displayed = ''\n)".format(
-                                       I=RNI["I"], im=i[2]), 
-                                   "\\1\\2" \
-                                   "\\1{n}_displayed = ''\n".format(n=name),
-                                   self.code)
-        
             self.code = re.sub(sg_img_c.format(i=i[0], c=i[1], n=i[2], 
                                    sc=re.escape(i[3]), ss=re.escape(i[4]), 
                                    dc=re.escape(i[5]), ds=re.escape(i[6]), 
                                    a=re.escape(i[7]), S=RNI["S"], M=RNI["M"]), 
-                               tk_image.format(i=i[0], n=name, im=i[2], sc=i[3], 
-                                   ss=i[4], c=i[1], dc=i[5], ds=i[6], a=angle), 
+                               tk_image.format(i=i[0], n=i[2], sc=i[3], ss=i[4], 
+                                   ds=i[6], a=angle, c=i[1], dc=i[5]), 
                                self.code)
     
     
