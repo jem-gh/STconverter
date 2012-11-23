@@ -33,13 +33,13 @@ the Tkinter module (generally installed by default with Python) to run correctly
 http://www.python.org/download/
 
 
-1.2. To run your program on your machine once converted
+1.2. To run your program (after conversion) on your machine
 
 A simple rule of thumb is:
-			Additional module(s)	Works with Python
-program			/			2.7 or 3
-program with music	pygame			2.7 or 3
-program with image	PIL			2.7 only
+				Additional module(s)	Works with Python
+your program is simple		/			2.7 or 3
+your program has music		pygame			2.7 or 3
+your program has image		PIL			2.7 only
 
 - Music: if your SimpleGUI program plays music, you will need in addition to have 
 pygame installed on your machine to run your program (but is not required for the 
@@ -64,12 +64,11 @@ and it's ready to use.
 
 3. HOW TO USE
 
-On linux, you can start the program by clicking on the STconverter.py file or 
-by typing in terminal:
+On linux, you can start the program by typing in terminal:
 
 	./Path_To_The_Directory_Where_It_Is_Located/STconverter.py
 
-or if STconverter is in your current folder:
+or if STconverter is already in your current folder:
 
 	./STconverter.py
 
@@ -80,11 +79,26 @@ The GUI will then start.
 4. MAJOR KNOWN ISSUES
 
 - Global Variables: SimpleGUI handles very well global variables which were 
-assigned "locally" in a function. 
+assigned "locally" in a function. This is generally not the case of your 
+Python interpreter. 
 
-- Comments written inside multiline SimpleGUI expressions (as for example a 
-canvas.draw_polyline() written in multiline) are not supported. (however, 
-comments written at the end of such expressions is not an issue)
+- Multiline Expressions: although STconverter can handle multiline SimpleGUI 
+expressions (as for example a canvas.draw_polyline() written in multiline), 
+sometimes it can cause problems during the conversion. 
+If it is the case, try to write the parameters in variables before:
+	canvas.draw_polyline([(CANVAS_SIZE[0] // 3, CANVAS_SIZE[1] // 3), 
+        	              (POINT_POS[0] * 2, POINT_POS[1] * 2), 
+                	      (POINT_POS[0] * 3, POINT_POS[1] * 3)], 
+                	      12, "Blue")
+will become:
+	points = [(CANVAS_SIZE[0] // 3, CANVAS_SIZE[1] // 3), 
+        	  (POINT_POS[0] * 2, POINT_POS[1] * 2), 
+          	  (POINT_POS[0] * 3, POINT_POS[1] * 3)]
+	canvas.draw_polyline(points, 12, "Blue")
+
+- Comments: Comments written inside multiline SimpleGUI expressions are not 
+supported yet. (however, comments written at the end of such expressions is 
+not an issue)
 
 
 
