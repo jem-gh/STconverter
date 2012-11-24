@@ -99,7 +99,7 @@ class Simplegui2Tkinter:
         
         # add division from future to enable true division in Python 2.7
         self.code = re.sub("^((?:\s|(?:#.*\n))*)", 
-                           "\\1\n\nfrom __future__ import division\n\n", 
+                           "\\1\nfrom __future__ import division\n\n", 
                            self.code)
     
     
@@ -413,32 +413,46 @@ class Simplegui2Tkinter:
         if "create_timer" not in self.code:
             return
         
+        # add a class to handle all timers at the beginning of the converted 
+        # file just after the imported modules 
+        cl = "class STconverter_timer:\n" \
+             "    def __init__(self, interval, function):\n" \
+             "        self.interval = int(interval)\n" \
+             "        self.function = function\n" \
+             "        self.status = False\n" \
+             "    \n" \
+             "    def set_status(self, status):\n" \
+             "        if status != self.status:\n" \
+             "            self.status = status\n" \
+             "            self.run()\n" \
+             "    \n" \
+             "    def run(self):\n" \
+             "        if self.status:\n" \
+             "            window_root.after(self.interval, self.run)\n" \
+             "            self.function()\n\n"
+        
+        last = re.findall("^((?:import +.+\n)|(?:from +.+\n))", 
+                          self.code, re.M)[-1]
+        self.code = re.sub(last, "{m}\n".format(m=last) + cl, self.code)
+        
         # retrieve all Timer widgets' names
         timer_names = re.findall("{N} *= *simplegui.create_timer\(".format(
                                      N=RNI["N"]), 
                                  self.code)
         
         for t in timer_names:
-            # update timer event handler
+            # update timer event handler(s)
             sg_timer_start = "{}\.start\(\)".format(t)
             sg_timer_stop =  "{}\.stop\(\)".format(t)
-            tk_timer_start = "{}_st(True)".format(t)
-            tk_timer_stop =  "{}_st(False)".format(t)
+            tk_timer_start = "{}.set_status(True)".format(t)
+            tk_timer_stop =  "{}.set_status(False)".format(t)
             self.code = re.sub(sg_timer_start, tk_timer_start, self.code)
             self.code = re.sub(sg_timer_stop, tk_timer_stop, self.code)
             
-            # update timer
-            sg_timer = "{I}{t} *= *simplegui.create_timer"\
+            # update timer(s)
+            sg_timer = "{I}{t} *= *simplegui.create_timer" \
                        "\( *{P}{S}{N} *\){M}"
-            tk_timer = "\\1{t}_status = False\n\n" \
-                       "\\1def {t}_st(status):\n" \
-                       "\\1    global {t}_status\n" \
-                       "\\1    {t}_status = status\n\n" \
-                       "\\1def {t}_fn():\\4\n" \
-                       "\\1    window_root.after(int(\\2), {t}_fn)\n" \
-                       "\\1    if {t}_status:\n" \
-                       "\\1        \\3()\n\n" \
-                       "\\1{t}_fn()\n"
+            tk_timer = "\\1{t} = STconverter_timer(\\2, \\3)\\4"
             self.code = re.sub(sg_timer.format(I=RNI["I"], t=t, P=RNI["P"], 
                                    S=RNI["S"], N=RNI["N"], M=RNI["M"]), 
                                tk_timer.format(t=t), 
@@ -540,7 +554,7 @@ class Simplegui2Tkinter:
         m_url = "(import +.*urllib.*\n)"
         n_url = "\\1import urllib\n" \
                 "from PIL import Image, ImageTk\n\n"
-        w_url = "\\1from PIL import Image, ImageTk\n\n"
+        w_url = "\\1from PIL import Image, ImageTk\n\n\n"
         
         # Class added to the converted file if images are used in the program. 
         # The class will store, process, and draw images and the parts/tiles 
