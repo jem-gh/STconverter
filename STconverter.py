@@ -694,18 +694,21 @@ class Simplegui2Tkinter:
         
         # mouse click
         if "set_mouseclick_handler" in self.code:
+            
+            sg_click = "{C}.set_mouseclick_handler\( *{N} *\){M}".format(
+                           C=RNI["C"], N=RNI["N"], M=RNI["M"])
+            tk_click = "canvas.bind('<Button-1>', \\2)\\3\n"
+            
             # update function called by set_mouseclick_handler()
-            fn_name = re.findall("\w+.set_mouseclick_handler\( *(\w+) *\)", 
-                                 self.code)[0]
-            self.code = re.sub("( *)def {n}\((\w+)\):\n".format(n=fn_name),
+            fn_name = re.findall(sg_click, self.code)[0][1]
+            self.code = re.sub("{I}def {n}\( *{N} *\):\n".format(I=RNI["I"], 
+                                   n=fn_name, N=RNI["N"]), 
                                "\\1def {n}(\\2):\n" \
-                               "\\1    \\2 = (\\2.x, \\2.y)\n".format(n=fn_name),
+                               "\\1    \\2 = (\\2.x, \\2.y)\n".format(n=fn_name), 
                                self.code)
             
             # update mouse click event handler registration
-            self.code = re.sub("\w+.set_mouseclick_handler\((\w+)\)",
-                               "canvas.bind('<Button-1>', \\1)\n",
-                               self.code)
+            self.code = re.sub(sg_click, tk_click, self.code)
     
     
     def up_ini(self):
