@@ -179,33 +179,42 @@ class Simplegui2Tkinter:
     def up_canvas_oval(self):
         """ update the Canvas circle/oval item(s) """
         
-        sg_circle = "{C}.draw_circle\( *{Pm}{S}{P}{S}{P}{S}{Pq}{S}?{Pq}? *\)".\
-                    format(C=RNI["C"], Pm=RNI["Pm"], S=RNI["S"], P=RNI["P"], 
-                           Pq=RNI["Pq"])
-        tk_oval =     '{c}.create_oval(({x1},{y1},{x2},{y2}), width={w}, ' \
-                      'outline={l}, fill={f})'
-        tk_oval_var = 't_x, t_y = {v}\n' \
-                      '{s}t_r = {r}\n' \
-                      '{s}t_x1, t_x2 = (t_x - t_r), (t_x + t_r)\n' \
-                      '{s}t_y1, t_y2 = (t_y - t_r), (t_y + t_r)\n' \
-                      '{s}{n}{c}.create_oval((t_x1,t_y1,t_x2,t_y2), width={w}, ' \
-                      'outline={l}, fill={f})'
+        # return if no circle/oval defined in input code
+        if "draw_circle" not in self.code:
+            return
+        
+        sg_circle = "{No} *=? *{C}.draw_circle" \
+                    "\( *{Pm}{S}{P}{S}{P}{S}{Pq}{S}?{Pq}? *\)".\
+                    format(No=RNI["No"], C=RNI["C"], Pm=RNI["Pm"], 
+                           S=RNI["S"], P=RNI["P"], Pq=RNI["Pq"])
+        tk_oval     = '{c}.create_oval(({x1},{y1},{x2},{y2}), width={w}, ' \
+                          'outline={l}, fill={f})'
+        tk_oval_var = '\\1coor = STconverter_oval({coor}, {r})\n' \
+                      '\\1{n}{c}.create_oval(coor, width={w}, ' \
+                          'outline={l}, fill={f})'
+        # function added to the converted file to calculate oval(s) coordinates 
+        # if position and/or radius is a variable (not installed by default)
+        fn = "def STconverter_oval(xy, r):\n" \
+             "    x, y = xy\n" \
+             "    return ((x - r), (y - r), (x + r), (y + r))\n\n"
+        fn_needed = False
         
         ovals = re.findall(sg_circle, self.code)
         
         for oval in ovals:
-            # if coord and rad use digit only, without variables nor operations
-            is_pos_digit = not re.findall(r"[a-zA-Z\+\-\*\/\%]", oval[1])
-            is_rad_digit = not re.findall(r"[a-zA-Z\+\-\*\/\%]", oval[2])
+            n, c, coor, r, w, l, f = oval
+            fill = f if f else '""'
+            
+            # if coor and r use digit only, without variables nor operations
+            is_pos_digit = not re.findall(r"[a-zA-Z\+\-\*\/\%]", coor)
+            is_rad_digit = not re.findall(r"[a-zA-Z\+\-\*\/\%]", r)
             if is_pos_digit and is_rad_digit:
-                c, xy, r, w, l, f = oval
-                x, y = re.findall(r"\d+", xy)
+                x, y = re.findall(r"\d+", coor)
                 x1, x2 = (int(x) - int(r)), (int(x) + int(r))
                 y1, y2 = (int(y) - int(r)), (int(y) + int(r))
-                fill = f if f else '""'
                 self.code = re.sub("{c}.draw_circle\( *" \
-                                   "{xy}{S}{r}{S}{w}{S}{l}{S}?{f} *\)".\
-                                   format(c=c, xy=re.escape(xy), S=RNI["S"], 
+                                   "{coor}{S}{r}{S}{w}{S}{l}{S}?{f} *\)".\
+                                   format(c=c, coor=re.escape(coor), S=RNI["S"], 
                                        r=r, w=re.escape(w), l=re.escape(l), 
                                        f=re.escape(f)), 
                                    tk_oval.format(c=c, x1=x1, y1=y1, x2=x2, 
@@ -214,32 +223,23 @@ class Simplegui2Tkinter:
             
             # if position and/or radius is a variable
             else:
-                c, var, r, w, l, f = oval
-                name = re.findall("(\w+ *= *)?{c}.draw_circle\( *" \
-                                  "{v}{S}{r}{S}{w}{S}{l}{S}?{f} *\)".\
-                                  format(c=c, v=re.escape(var), S=RNI["S"], 
-                                      r=re.escape(r), w=re.escape(w), 
-                                      l=re.escape(l), f=re.escape(f)), 
-                                  self.code)
-                name = name[0] if name else ''
-                space = re.findall("( *){n}{c}.draw_circle\( *" \
-                                   "{v}{S}{r}{S}{w}{S}{l}{S}?{f} *\)".\
-                                   format(n=name, c=c, v=re.escape(var), 
-                                       S=RNI["S"], r=re.escape(r), 
-                                       w=re.escape(w), l=re.escape(l), 
-                                       f=re.escape(f)), 
+                fn_needed = True
+                name = n + " = " if n else ''
+                self.code = re.sub("{I}{n} *=? *{c}.draw_circle\( *" \
+                                   "{coor}{S}{r}{S}{w}{S}{l}{S}?{f} *\)".\
+                                   format(I=RNI["I"], n=n, c=c, 
+                                       coor=re.escape(coor), S=RNI["S"], 
+                                       r=re.escape(r), w=re.escape(w), 
+                                       l=re.escape(l), f=re.escape(f)), 
+                                   tk_oval_var.format(coor=coor, r=r, n=name, 
+                                       c=c, w=w, l=l, f=fill), 
                                    self.code)
-                space = space[0] if space else ''
-                fill = f if f else '""'
-                self.code = re.sub("{n}{c}.draw_circle\( *" \
-                                   "{v}{S}{r}{S}{w}{S}{l}{S}?{f} *\)".\
-                                   format(n=name, c=c, v=re.escape(var), 
-                                       S=RNI["S"], r=re.escape(r), 
-                                       w=re.escape(w), l=re.escape(l), 
-                                       f=re.escape(f)), 
-                                   tk_oval_var.format(v=var, s=space, n=name, 
-                                       c=c, r=r, w=w, l=l, f=fill), 
-                                   self.code)
+        
+        # add fn to the converted code if needed 
+        if fn_needed:
+            last = re.findall("^((?:import +.+\n)|(?:from +.+\n))", 
+                              self.code, re.M)[-1]
+            self.code = re.sub(last, "{m}\n".format(m=last) + fn, self.code)
     
     
     def up_canvas_line(self):
