@@ -548,7 +548,7 @@ class Simplegui2Tkinter:
         if "draw_image" not in self.code:
             return
         
-        # add Python Imaging Library (PIL) (to process images) and urllib 
+        # add Python Imaging Library (PIL) (to process images) and urllib module 
         # (to retrieve images from Internet) if not yet available
         m_tk =  "(import +.*Tkinter.*\n)"
         m_url = "(import +.*urllib.*\n)"
@@ -599,32 +599,30 @@ class Simplegui2Tkinter:
         
         
         # update all images loading
-        self.code = re.sub("{I}{N} *=? *simplegui.load_image\( *{Pq} *\)".\
-                               format(I=RNI["I"], N=RNI["N"], Pq=RNI["Pq"]), 
-                           "\\1\\2 = Image.open(urllib.urlretrieve(\\3)[0])\n" \
-                           "\\1\\2_obj = STconverter_image(\\2)\n", 
+        self.code = re.sub("{N} *=? *simplegui.load_image\( *{Pq} *\)".\
+                               format(N=RNI["N"], Pq=RNI["Pq"]), 
+                           "\\1 = STconverter_image(Image.open(" \
+                                                   "urllib.urlretrieve(\\2)[0]))", 
                            self.code)
         
         
         # update all images drawing
-        sg_image = "{I}{N}.draw_image" \
-                   "\( *{N}{S}{Pc}{S}{Pc}{S}{Pc}{S}{Pc}{S}?{P}? *\){M}"
-        sg_img_c = "{i}{c}.draw_image" \
-                   "\( *{n}{S}{sc}{S}{ss}{S}{dc}{S}{ds}{S}?{a}? *\){M}"
-        tk_image = "{i}{n}_obj.draw({c}, {sc}, {ss}, {dc}, {ds}, {a})\\1\n"
+        sg_image = "{N}.draw_image\( *{N}{S}{Pc}{S}{Pc}{S}{Pc}{S}{Pc}{S}?{P}? *\){M}"
+        sg_img_c = "{c}.draw_image\( *{n}{S}{sc}{S}{ss}{S}{dc}{S}{ds}{S}?{a}? *\){M}"
+        tk_image = "{n}.draw({c}, {sc}, {ss}, {dc}, {ds}, {a})\\1\n"
         
-        images = re.findall(sg_image.format(I=RNI["I"], N=RNI["N"], S=RNI["S"], 
-                                Pc=RNI["Pc"], P=RNI["P"], M=RNI["M"]), 
+        images = re.findall(sg_image.format(N=RNI["N"], S=RNI["S"], Pc=RNI["Pc"], 
+                                P=RNI["P"], M=RNI["M"]), 
                             self.code)
         
         for i in images:
-            angle = i[7] if i[7] else 0
-            self.code = re.sub(sg_img_c.format(i=i[0], c=i[1], n=i[2], 
-                                   sc=re.escape(i[3]), ss=re.escape(i[4]), 
-                                   dc=re.escape(i[5]), ds=re.escape(i[6]), 
-                                   a=re.escape(i[7]), S=RNI["S"], M=RNI["M"]), 
-                               tk_image.format(i=i[0], n=i[2], c=i[1], sc=i[3], 
-                                   ss=i[4], dc=i[5], ds=i[6], a=angle), 
+            angle = i[6] if i[6] else 0
+            self.code = re.sub(sg_img_c.format(c=i[0], n=i[1], sc=re.escape(i[2]), 
+                                   ss=re.escape(i[3]), dc=re.escape(i[4]), 
+                                   ds=re.escape(i[5]), a=re.escape(i[6]), 
+                                   S=RNI["S"], M=RNI["M"]), 
+                               tk_image.format(n=i[1], c=i[0], sc=i[2], ss=i[3], 
+                                   dc=i[4], ds=i[5], a=angle), 
                                self.code)
     
     
