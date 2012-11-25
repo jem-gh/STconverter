@@ -253,13 +253,24 @@ class Simplegui2Tkinter:
     
     
     def up_canvas_polyline(self):
-        """ update the Canvas polyline item() """
+        """ update the Canvas polyline item(s) """
         
-        sg_pline = "{C}.draw_polyline\( *{Pm}{S}{P}{S}{Pq} *\)".\
-                   format(C=RNI["C"], Pm=RNI["Pm"], S=RNI["S"], P=RNI["P"], 
-                          Pq=RNI["Pq"])
-        tk_pline = "\\1.create_line(\\2, width=\\3, fill=\\4)"
-        self.code = re.sub(sg_pline, tk_pline, self.code)
+        sg_pline = "{C}.draw_polyline\( *{Pm}{S}{P}{S}{Pq} *\)"
+        tk_pline = "{c}.create_line({coor}, width={w}, fill={f})"
+        
+        polylines = re.findall(sg_pline.format(C=RNI["C"], Pm=RNI["Pm"], 
+                                   S=RNI["S"], P=RNI["P"], Pq=RNI["Pq"]), 
+                               self.code)
+        
+        for p in polylines:
+            # if coor is a variable, repeat the first point to avoid a crash 
+            # of the converted program in case the variable only has one point
+            is_coor_var = re.findall(r"^\w+", p[1])
+            coor = p[1] if not is_coor_var else p[1] + "[0], " + p[1]
+            self.code = re.sub(sg_pline.format(C=p[0], Pm=re.escape(p[1]), S=RNI["S"], 
+                                   P=re.escape(p[2]), Pq=re.escape(p[3])), 
+                               tk_pline.format(c=p[0], coor=coor, w=p[2], f=p[3]), 
+                               self.code)
     
     
     def up_canvas_polygon(self):
