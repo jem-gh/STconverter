@@ -183,8 +183,8 @@ class Simplegui2Tkinter:
             return
         
         sg_circle = "{No} *=? *{C}.draw_circle" \
-                    "\( *{Pm}{S}{P}{S}{P}{S}{Pq}{S}?{Pq}? *\)".\
-                    format(No=RNI["No"], C=RNI["C"], Pm=RNI["Pm"], 
+                    "\( *{Pc}{S}{P}{S}{P}{S}{Pq}{S}?{Pq}? *\)".\
+                    format(No=RNI["No"], C=RNI["C"], Pc=RNI["Pc"], 
                            S=RNI["S"], P=RNI["P"], Pq=RNI["Pq"])
         tk_oval     = '{c}.create_oval(({x1},{y1},{x2},{y2}), width={w}, ' \
                           'outline={l}, fill={f})'
