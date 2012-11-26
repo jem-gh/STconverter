@@ -45,7 +45,7 @@ RNI = {
     # PARAMETER QUOTED: variable, list, quoted string
 "Pq" : "((?:[\"].*?[\"]|[\'].*?[\']|[\w\.]+[\[\(\w\]\)]*|[\w\+\-\*\/\%\.\[\(\]\) ]+)+?)", 
     # SPACE: comma, space, \n, \
-"S"  : "(?: *,[\s\\\]*)", 
+"S"  : "(?: *,?[\s\\\]*)", 
     # COMMENT
 "M"  : "( *#?.*)"
 }
@@ -676,14 +676,15 @@ class Simplegui2Tkinter:
         # update other key events
         
         # recognition of a specific pressed key
-        sg_k_spe = "{N} *== *simplegui.KEY_MAP\[{Pq}\]"
+        sg_k_spe = "{N} *== *simplegui.KEY_MAP{S}\[{Pq}\]"
         tk_k_spe = '{p}.keysym == "{k}"'
         
-        keys = re.findall(sg_k_spe.format(N=RNI["N"], Pq=RNI["Pq"]), self.code)
+        keys = re.findall(sg_k_spe.format(N=RNI["N"], S=RNI["S"], Pq=RNI["Pq"]), 
+                          self.code)
         
         for k in keys:
             keymap = k[1][1:-1] if len(k[1][1:-1]) == 1 else k[1][1:-1].title()
-            self.code = re.sub(sg_k_spe.format(N=k[0], Pq=k[1]), 
+            self.code = re.sub(sg_k_spe.format(N=k[0], S=RNI["S"], Pq=k[1]), 
                                tk_k_spe.format(p=k[0], k=keymap),
                                self.code)
     
