@@ -31,7 +31,7 @@ RNI = {
     # INDENTATION
 "I"  : "( *)", 
     # NAME
-"N"  : "(\w+)", 
+"N"  : "([\w\.]+)", 
     # NAME OPTIONAL
 "No" : "(\w*?)", 
     # CANVAS / FRAME
