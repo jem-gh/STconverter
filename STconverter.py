@@ -45,7 +45,7 @@ RNI = {
     # PARAMETER QUOTED: variable, list, quoted string
 "Pq" : "((?:[\"].*?[\"]|[\'].*?[\']|[\w\.]+[\[\(\w\]\)]*|[\w\+\-\*\/\%\.\[\(\]\) ]+)+?)", 
     # SPACE: comma, space, \n, \
-"S"  : "(?: *,?[\s\\\]*)", 
+"S"  : "(?: *(?:,|\\\| )+\s*)", 
     # COMMENT
 "M"  : "( *#?.*)"
 }
@@ -687,7 +687,7 @@ class Simplegui2Tkinter:
         self.code = re.sub("chr\( *({p}) *\)".format(p=param), "\\1", self.code)
         
         #recognition of a specific pressed key
-        sg_k_spe = "{N} *== *simplegui.KEY_MAP{S}\[{Pq}\]"
+        sg_k_spe = "{N} *== *simplegui.KEY_MAP{S}?\[{Pq}\]"
         tk_k_spe = '{p} == {k}'
         
         keys = re.findall(sg_k_spe.format(N=RNI["N"], S=RNI["S"], Pq=RNI["Pq"]), 
