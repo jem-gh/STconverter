@@ -387,7 +387,7 @@ class Simplegui2Tkinter:
                    "{i}{n}_et.pack()\n"
         sg_inp_fn_p = "def {n}\( *{N} *\):"
         sg_inp_fn   = "def {n}\( *{p} *\): *(?:\n .*)+[=( \-+*/]{p}[) \-+*/\n]"
-        param_def   = "(?<=(?<!{i})[= \(\-+*/]){p}(?=[ \)\-+*/\n])"
+        param_def   = "(?<=(?<!{i})[= \(\-+*/]){p}(?=[ \)\.\-+*/\n])"
         
         inputs = re.findall(sg_input.format(I=RNI["I"], No=RNI["No"], C=RNI["C"], 
                                 Pq=RNI["Pq"], S=RNI["S"], N=RNI["N"], P=RNI["P"], 
