@@ -758,8 +758,8 @@ class Simplegui2Tkinter:
     def up_Tkinter_incompatible(self):
         
         """ some color names specified to draw object in SimpleGUI canvas 
-            aren't always well recognized by Tkinter ... change to their 
-            RGB value """
+            aren't always well recognized by the OS/Tkinter ... change to 
+            their hexadecimal values """
         self.code = re.sub(r"[\"\'][aA]qua[\"\']", r"'#00FFFF'", self.code)
         self.code = re.sub(r"[\"\'][fF]uchsia[\"\']", r"'#FF00FF'", self.code)
         self.code = re.sub(r"[\"\'][lL]ime[\"\']", r"'#00FF00'", self.code)
