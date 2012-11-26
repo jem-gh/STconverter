@@ -652,21 +652,27 @@ class Simplegui2Tkinter:
         k_down = re.findall(sg_k_down, self.code)[0]
         self.code = re.sub(sg_k_down, tk_k_down, self.code)
         
+        # function which will return to the key handlers the corresponding 
+        # keysym when a key is pressed 
+        fn = "def STconverter_keydown(key):\n" \
+             "    {kd}(key.keysym)\n\n".format(kd=k_down[2])        
+        
         # find and update released-key call to event handler
         sg_k_up = "{I}{C}.set_keyup_handler\( *{N} *\){M}".format(
                       I=RNI["I"], C=RNI["C"], N=RNI["N"], M=RNI["M"])
         tk_k_up = '\\1\\2.bind("<KeyRelease>", STconverter_keyup)\\4\n'
         
-        k_up = re.findall(sg_k_up, self.code)[0]
-        self.code = re.sub(sg_k_up, tk_k_up, self.code)
+        k_up = re.findall(sg_k_up, self.code)
+        if k_up:
+            self.code = re.sub(sg_k_up, tk_k_up, self.code)
+            
+            # function which will return to the key handlers the corresponding 
+            # keysym when a key is pressed 
+            fn = fn + \
+                 "def STconverter_keyup(key):\n" \
+                 "    {ku}(key.keysym)\n\n".format(ku=k_up[0][2])
         
-        # add functions to the converted file which will return to the key 
-        # handlers the corresponding keysym when a key is pressed or released 
-        fn = "def STconverter_keydown(key):\n" \
-             "    {kd}(key.keysym)\n\n" \
-             "def STconverter_keyup(key):\n" \
-             "    {ku}(key.keysym)\n\n".format(kd=k_down[2], ku=k_up[2])
-        
+        # add function(s) to the converted file 
         last = re.findall("^((?:import +.+\n)|(?:from +.+\n))", 
                           self.code, re.M)[-1]
         self.code = re.sub(last, "{m}\n".format(m=last) + fn, self.code)
@@ -675,21 +681,38 @@ class Simplegui2Tkinter:
         # update other key events:
         
         # capturing of key event: chr()
-        param = re.findall("def {e}\( *{N} *\)".format(e=k_down[2], N=RNI["N"]), 
+        param = re.findall("def {e}\( *(?:self *, *)?{N} *\)".format(
+                               e=k_down[2].split(".")[-1], N=RNI["N"]), 
                            self.code)[0]
         self.code = re.sub("chr\( *({p}) *\)".format(p=param), "\\1", self.code)
         
         #recognition of a specific pressed key
         sg_k_spe = "{N} *== *simplegui.KEY_MAP{S}\[{Pq}\]"
-        tk_k_spe = '{p} == "{k}"'
+        tk_k_spe = '{p} == {k}'
         
         keys = re.findall(sg_k_spe.format(N=RNI["N"], S=RNI["S"], Pq=RNI["Pq"]), 
                           self.code)
         
+        variables = []
         for k in keys:
-            keymap = k[1][1:-1] if len(k[1][1:-1]) == 1 else k[1][1:-1].title()
+            if k[1][0] in ['"', "'"]:
+                keymap = k[1][1:-1] if len(k[1][1:-1]) == 1 else k[1][1:-1].title()
+                keymap = '"' + keymap + '"'
+            else:
+                keymap = k[1]
+                variables.append(k[1])
             self.code = re.sub(sg_k_spe.format(N=k[0], S=RNI["S"], Pq=k[1]), 
                                tk_k_spe.format(p=k[0], k=keymap),
+                               self.code)
+        
+        # if the key was referenced by a variable, try to find the key back 
+        for v in variables:
+            v = v.split(".")[-1]
+            key = re.findall("{v} *= *[\"\']{N}[\"\']".format(v=v, N=RNI["N"]), 
+                               self.code)[0]
+            keymap = key if len(key) == 1 else key.title()
+            self.code = re.sub("{v} *= *[\"\']{k}[\"\']".format(v=v, k=key), 
+                               "{v} = '{k}'".format(v=v, k=keymap), 
                                self.code)
     
     
