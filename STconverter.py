@@ -639,6 +639,10 @@ class Simplegui2Tkinter:
     def up_key(self):
         """ update event handlers involved when a key is pressed or released """
         
+        # return if no key handler used in input code
+        if "set_keydown_handler" not in self.code:
+            return
+        
         # find and update each pressed-key call to handler and handler
         sg_k_down = "{I}{C}.set_keydown_handler\( *{N} *\){M}"
         tk_k_down = '\\1{c}.bind("<Key>", {e}){m}\n' \
