@@ -643,45 +643,45 @@ class Simplegui2Tkinter:
         if "set_keydown_handler" not in self.code:
             return
         
-        # find and update each pressed-key call to handler and handler
-        sg_k_down = "{I}{C}.set_keydown_handler\( *{N} *\){M}"
-        tk_k_down = '\\1{c}.bind("<Key>", {e}){m}\n' \
-                    '\\1{c}.focus_set()\n'
+        # find and update pressed-key call to event handler
+        sg_k_down = "{I}{C}.set_keydown_handler\( *{N} *\){M}".format(
+                        I=RNI["I"], C=RNI["C"], N=RNI["N"], M=RNI["M"])
+        tk_k_down = '\\1\\2.bind("<Key>", STconverter_keydown)\\4\n' \
+                    '\\1\\2.focus_set()\n'
         
-        k_down = re.findall(sg_k_down.format(I=RNI["I"], C=RNI["C"], N=RNI["N"], 
-                                M=RNI["M"]), 
-                            self.code)
-        for eh in k_down:
-            # retrieve parameter name used by event handler
-            eh_param = re.findall("def {e}\( *{N} *\)".format(e=eh[2], N=RNI["N"]), 
-                                  self.code)[0]
-            # retrieve entire event handler to update the capturing of key event
-            eh_old = re.findall(" *def {e}\( *{p} *\):.*\n" \
-                                "(?: *.+\n)+".format(e=eh[2], p=eh_param), 
-                                self.code)[0]
-            eh_new = re.sub("chr\( *({p}) *\)".format(p=eh_param), 
-                            "\\1.keysym", 
-                            eh_old)
-            # update event handler
-            self.code = re.sub(re.escape(eh_old), eh_new, self.code)
-            # update call to handler
-            self.code = re.sub(sg_k_down.format(I=RNI["I"], C=eh[1], N=eh[2], 
-                                   M=re.escape(eh[3])), 
-                               tk_k_down.format(c=eh[1], e=eh[2], m=eh[3]), 
-                               self.code)
+        k_down = re.findall(sg_k_down, self.code)[0]
+        self.code = re.sub(sg_k_down, tk_k_down, self.code)
         
-        # find and update each released-key call to event handler
-        sg_k_up = "{C}.set_keyup_handler\( *{N} *\){M}".format(
-                      C=RNI["C"], N=RNI["N"], M=RNI["M"])
-        tk_k_up = '\\1.bind("<KeyRelease>", \\2)\\3\n'
+        # find and update released-key call to event handler
+        sg_k_up = "{I}{C}.set_keyup_handler\( *{N} *\){M}".format(
+                      I=RNI["I"], C=RNI["C"], N=RNI["N"], M=RNI["M"])
+        tk_k_up = '\\1\\2.bind("<KeyRelease>", STconverter_keyup)\\4\n'
+        
+        k_up = re.findall(sg_k_up, self.code)[0]
         self.code = re.sub(sg_k_up, tk_k_up, self.code)
         
+        # add functions to the converted file which will return to the key 
+        # handlers the corresponding keysym when a key is pressed or released 
+        fn = "def STconverter_keydown(key):\n" \
+             "    {kd}(key.keysym)\n\n" \
+             "def STconverter_keyup(key):\n" \
+             "    {ku}(key.keysym)\n\n".format(kd=k_down[2], ku=k_up[2])
         
-        # update other key events
+        last = re.findall("^((?:import +.+\n)|(?:from +.+\n))", 
+                          self.code, re.M)[-1]
+        self.code = re.sub(last, "{m}\n".format(m=last) + fn, self.code)
         
-        # recognition of a specific pressed key
+        
+        # update other key events:
+        
+        # capturing of key event: chr()
+        param = re.findall("def {e}\( *{N} *\)".format(e=k_down[2], N=RNI["N"]), 
+                           self.code)[0]
+        self.code = re.sub("chr\( *({p}) *\)".format(p=param), "\\1", self.code)
+        
+        #recognition of a specific pressed key
         sg_k_spe = "{N} *== *simplegui.KEY_MAP{S}\[{Pq}\]"
-        tk_k_spe = '{p}.keysym == "{k}"'
+        tk_k_spe = '{p} == "{k}"'
         
         keys = re.findall(sg_k_spe.format(N=RNI["N"], S=RNI["S"], Pq=RNI["Pq"]), 
                           self.code)
