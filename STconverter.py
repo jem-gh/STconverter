@@ -41,9 +41,9 @@ RNI = {
     # PARAMETER COORDINATE: digit, variable, list, operation, tuple
 "Pc" : "(\w+|[\[\(\w\+\-\*\/\%\. ]+,?[\w\+\-\*\/\%\. \]\)]*)", 
     # PARAMETER MULTILINE: digit, variable, list, operation, tuple, multiline
-"Pm" : "([\w\.]+|[\w\.]+[\[\(\w\]\)]+|[\w\+\-\*\/\%\.\[\(\]\)\s,\\\\]+)", 
+"Pm" : "([\w\.]+[\[\(\w\]\)]*|\[[\w\+\-\*\/\%\.\[\(\]\)\s,\\\\]+\])", 
     # PARAMETER QUOTED: variable, list, quoted string
-"Pq" : "((?:[\"].*?[\"]|[\'].*?[\']|[\w\.]+|[\w\.]+[\[\(\w\]\)]+|[\w\+\-\*\/\%\.\[\(\]\) ]+)+?)", 
+"Pq" : "((?:[\"].*?[\"]|[\'].*?[\']|[\w\.]+[\[\(\w\]\)]*|[\w\+\-\*\/\%\.\[\(\]\) ]+)+?)", 
     # SPACE: comma, space, \n, \
 "S"  : "(?: *,[\s\\\]*)", 
     # COMMENT
@@ -199,7 +199,7 @@ class Simplegui2Tkinter:
         fn_needed = False
         
         ovals = re.findall(sg_circle, self.code)
-        
+        print ovals ###################################################
         for oval in ovals:
             n, c, coor, r, w, l, f = oval
             fill = f if f else '""'
