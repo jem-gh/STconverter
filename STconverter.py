@@ -42,7 +42,7 @@ RNI = {
     # PARAMETER COORDINATE: digit, variable, list, operation, tuple
 "Pc" : "(\w+|[\[\(\w\+\-\*\/\%\. ]+,?[\w\+\-\*\/\%\. \]\)]*)", 
     # PARAMETER MULTILINE: digit, variable, list, operation, tuple, multiline
-"Pm" : "(\w+[\[\w\]]+|[\w\+\-\*\/\%\.\[\(\]\)\s,\\\\]+)", 
+"Pm" : "([\w\.]+|[\w\.]+[\[\(\w\]\)]+|[\w\+\-\*\/\%\.\[\(\]\)\s,\\\\]+)", 
     # PARAMETER QUOTED: variable, list, quoted string
 "Pq" : "((?:[\"].*?[\"]|[\'].*?[\']|[\w\.]+|[\w\.]+[\[\(\w\]\)]+|[\w\+\-\*\/\%\.\[\(\]\) ]+)+?)", 
     # SPACE: comma, space, \n, \
