@@ -44,7 +44,7 @@ RNI = {
     # PARAMETER MULTILINE: digit, variable, list, operation, tuple, multiline
 "Pm" : "(\w+[\[\w\]]+|[\w\+\-\*\/\%\.\[\(\]\)\s,\\\\]+)", 
     # PARAMETER QUOTED: variable, list, quoted string
-"Pq" : "((?:[\"].*?[\"]|[\'].*?[\']|\w+[\[\(\w\]\)]+|[\w\+\-\*\/\%\.\[\(\]\) ]+)+)", 
+"Pq" : "((?:[\"].*?[\"]|[\'].*?[\']|\w+|\w+[\[\(\w\]\)]+|[\w\+\-\*\/\%\.\[\(\]\) ]+)+?)", 
     # SPACE: comma, space, \n, \
 "S"  : "(?: *,[\s\\\]*)", 
     # COMMENT
@@ -494,9 +494,10 @@ class Simplegui2Tkinter:
         m_all = re.findall("{No} *=? *simplegui.load_sound\( *{Pq} *\)".\
                                format(No=RNI["No"], Pq=RNI["Pq"]), 
                            self.code)
-        
+        print m_all ###########################################################
         # verify or find source path of each music/sound
         for m in range(len(m_all)):
+            print m ###########################################################
             if m_all[m][1][0] not in ["'", '"']:
                 # if the link is in a list
                 if "[" in m_all[m][1]:
@@ -504,11 +505,15 @@ class Simplegui2Tkinter:
                     l = re.findall("{l} *= *\[\s*{Pq}+\s*\]".format(l=ref[0], 
                                        Pq=RNI["Pq"], S=RNI["S"]), 
                                    self.code, re.S)
+                    print l ###################################################
                     l = re.split(" *, *\n? *", l[0])[int(ref[1])][1:-1]
                     m_all[m] = [m_all[m], l]
                 
                 # if the link is the value of a variable
                 elif "[" not in m_all[m][1]:
+                    #########################################
+                    print re.findall("{m} *= *{Pq}".format(m=m_all[m][1], Pq=RNI["Pq"]), self.code)
+                    ############################################
                     m_all[m] = [m_all[m], re.findall("{m} *= *{Pq}".format(
                                     m=m_all[m][1], Pq=RNI["Pq"]), 
                                 self.code)[0][1:-1]]
