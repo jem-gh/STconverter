@@ -23,7 +23,6 @@
 # import global modules
 import re
 import urllib2      # used by up_music()
-import random       # used by up_image()
 
 
 
@@ -733,12 +732,12 @@ class Simplegui2Tkinter:
         """ some color names specified to draw object in SimpleGUI canvas 
             aren't always well recognized by Tkinter ... change to their 
             RGB value """
-        self.code = re.sub(r"[\"\']Aqua[\"\']", r"'#00FFFF'", self.code)
-        self.code = re.sub(r"[\"\']Fuchsia[\"\']", r"'#FF00FF'", self.code)
-        self.code = re.sub(r"[\"\']Lime[\"\']", r"'#00FF00'", self.code)
-        self.code = re.sub(r"[\"\']Olive[\"\']", r"'#808000'", self.code)
-        self.code = re.sub(r"[\"\']Silver[\"\']", r"'#C0C0C0'", self.code)
-        self.code = re.sub(r"[\"\']Teal[\"\']", r"'#008080'", self.code)
+        self.code = re.sub(r"[\"\'][aA]qua[\"\']", r"'#00FFFF'", self.code)
+        self.code = re.sub(r"[\"\'][fF]uchsia[\"\']", r"'#FF00FF'", self.code)
+        self.code = re.sub(r"[\"\'][lL]ime[\"\']", r"'#00FF00'", self.code)
+        self.code = re.sub(r"[\"\'][oO]live[\"\']", r"'#808000'", self.code)
+        self.code = re.sub(r"[\"\'][sS]ilver[\"\']", r"'#C0C0C0'", self.code)
+        self.code = re.sub(r"[\"\'][tT]eal[\"\']", r"'#008080'", self.code)
         
         """ SimpleGUI handles doc strings ending with four double quotes 
             which is not always well handled by other Python interpreters """
