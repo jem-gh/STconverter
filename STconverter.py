@@ -704,7 +704,9 @@ class Simplegui2Tkinter:
             self.code = re.sub("{I}def {n}\( *{N} *\):\n".format(I=RNI["I"], 
                                    n=fn_name, N=RNI["N"]), 
                                "\\1def {n}(\\2):\n" \
-                               "\\1    \\2 = (\\2.x, \\2.y)\n".format(n=fn_name), 
+                               "\\1    if isinstance(\\2, Tkinter.Event):\n" \
+                               "\\1        \\2 = (\\2.x, \\2.y)\n".format(
+                                   n=fn_name), 
                                self.code)
             
             # update mouse click event handler registration
