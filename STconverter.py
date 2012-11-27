@@ -612,10 +612,8 @@ class Simplegui2Tkinter:
         
         
         # update all images loading
-        self.code = re.sub("{N} *=? *simplegui.load_image\( *{Pq} *\)".\
-                               format(N=RNI["N"], Pq=RNI["Pq"]), 
-                           "\\1 = STconverter_image(Image.open(" \
-                                                   "urllib.urlretrieve(\\2)[0]))", 
+        self.code = re.sub("simplegui.load_image\( *{Pq} *\)".format(Pq=RNI["Pq"]), 
+                           "STconverter_image(Image.open(urllib.urlretrieve(\\1)[0]))", 
                            self.code)
         
         
