@@ -700,6 +700,7 @@ class Simplegui2Tkinter:
             k = k.strip()
             if k[0] in ['"', "'"]:
                 keymap = k if len(k[1:-1]) == 1 else k.title()
+                keymap = '"space"' if keymap in ["'Space'", '"Space"'] else keymap
             else:
                 keymap = k
                 variables.append(k)
@@ -713,6 +714,7 @@ class Simplegui2Tkinter:
             key = re.findall("{v} *= *[\"\']{N}[\"\']".format(v=v, N=RNI["N"]), 
                                self.code)[0]
             keymap = key if len(key) == 1 else key.title()
+            keymap = '"space"' if keymap in ["'Space'", '"Space"'] else keymap
             self.code = re.sub("{v} *= *[\"\']{k}[\"\']".format(v=v, k=key), 
                                "{v} = '{k}'".format(v=v, k=keymap), 
                                self.code)
