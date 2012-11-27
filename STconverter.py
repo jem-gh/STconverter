@@ -690,7 +690,7 @@ class Simplegui2Tkinter:
         self.code = re.sub("chr\( *({p}) *\)".format(p=param), "\\1", self.code)
         
         #recognition of a specific pressed key
-        sg_k_spe = "simplegui.KEY_MAP{S}?\[{Pq}\]"
+        sg_k_spe = "simplegui.KEY_MAP{S}?\[ *{Pq} *\]"
         tk_k_spe = '{k}'
         
         keys = re.findall(sg_k_spe.format(S=RNI["S"], Pq=RNI["Pq"]), self.code)
