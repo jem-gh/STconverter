@@ -512,7 +512,7 @@ class Simplegui2Tkinter:
                 # if the link is the value of a variable
                 elif "[" not in m_all[m][1]:
                     m_all[m] = [m_all[m], re.findall("{m} *= *{Pq}".format(
-                                    m=m_all[m][1], Pq=RNI["Pq"]), 
+                                    m=m_all[m][1].strip(), Pq=RNI["Pq"]), 
                                 self.code)[0][1:-1]]
             else:
                 m_all[m] = [m_all[m], m_all[m][1][1:-1]]
