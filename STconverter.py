@@ -41,7 +41,7 @@ RNI = {
     # PARAMETER: digit, variable, list, operation
 "P"  : "([\w\+\-\*\/\%\.\[\(\]\) ]+)", 
     # PARAMETER COORDINATE: digit, variable, list, operation, tuple
-"Pc" : "([\w\.]+[\[\(\w\]\)]*|[\[\(][^,]+,[^,]+[\]\)])", 
+"Pc" : "([\w\.]+|[\w\.]+\(.*\)|[\w\.]+\[.*\]|[\[\(][^,]+,[^,]+[\]\)])", 
     # PARAMETER MULTILINE: digit, variable, list, operation, tuple, multiline
 "Pm" : "([\w\.]+[\[\(\w\]\)]*|\[[\w\+\-\*\/\%\.\[\(\]\)\s,\\\\]+\])", 
     # PARAMETER QUOTED: variable, list, quoted string
