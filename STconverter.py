@@ -36,6 +36,8 @@ RNI = {
 "No" : "(\w*?)", 
     # CANVAS / FRAME
 "C"  : "(\w+)", 
+    # FUNCTION
+"F"  : "([\w\.]+(?:\(.*\))?)", 
     # PARAMETER: digit, variable, list, operation
 "P"  : "([\w\+\-\*\/\%\.\[\(\]\) ]+)", 
     # PARAMETER COORDINATE: digit, variable, list, operation, tuple
@@ -445,27 +447,28 @@ class Simplegui2Tkinter:
                           self.code, re.M)[-1]
         self.code = re.sub(last, "{m}\n".format(m=last) + cl, self.code)
         
-        # retrieve all Timer widgets' names
-        timer_names = re.findall("{N} *= *simplegui.create_timer\(".format(
-                                     N=RNI["N"]), 
-                                 self.code)
+        # update timer(s) and event handler(s)
+        sg_timer = "{I}{N} *= *simplegui.create_timer\( *{P}{S}{F} *\){M}"
+        tk_timer = "{i}{t} = STconverter_timer({p}, {f}){m}"
         
-        for t in timer_names:
+        timers = re.findall(sg_timer.format(I=RNI["I"], N=RNI["N"], P=RNI["P"], 
+                                S=RNI["S"], F=RNI["F"], M=RNI["M"]), 
+                            self.code)
+        
+        for t in timers:
             # update timer event handler(s)
-            sg_timer_start = "{}\.start\(\)".format(t)
-            sg_timer_stop =  "{}\.stop\(\)".format(t)
-            tk_timer_start = "{}.set_status(True)".format(t)
-            tk_timer_stop =  "{}.set_status(False)".format(t)
+            sg_timer_start = "([ \n]){}\.start\(\)".format(t[1])
+            sg_timer_stop =  "([ \n]){}\.stop\(\)".format(t[1])
+            tk_timer_start = "\\1{}.set_status(True)".format(t[1])
+            tk_timer_stop =  "\\1{}.set_status(False)".format(t[1])
             self.code = re.sub(sg_timer_start, tk_timer_start, self.code)
             self.code = re.sub(sg_timer_stop, tk_timer_stop, self.code)
             
             # update timer(s)
-            sg_timer = "{I}{t} *= *simplegui.create_timer" \
-                       "\( *{P}{S}{N} *\){M}"
-            tk_timer = "\\1{t} = STconverter_timer(\\2, \\3)\\4"
-            self.code = re.sub(sg_timer.format(I=RNI["I"], t=t, P=RNI["P"], 
-                                   S=RNI["S"], N=RNI["N"], M=RNI["M"]), 
-                               tk_timer.format(t=t), 
+            self.code = re.sub(sg_timer.format(I=t[0], N=t[1], P=re.escape(t[2]), 
+                                   S=RNI["S"], F=re.escape(t[3]), M=re.escape(t[4])), 
+                               tk_timer.format(i=t[0], t=t[1], p=t[2], f=t[3], 
+                                   m=t[4]), 
                                self.code)
     
      
