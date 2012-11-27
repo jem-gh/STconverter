@@ -697,6 +697,7 @@ class Simplegui2Tkinter:
         
         variables = []
         for k in keys:
+            k = k.strip()
             if k[0] in ['"', "'"]:
                 keymap = k if len(k[1:-1]) == 1 else k.title()
             else:
