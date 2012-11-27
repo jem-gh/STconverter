@@ -687,22 +687,20 @@ class Simplegui2Tkinter:
         self.code = re.sub("chr\( *({p}) *\)".format(p=param), "\\1", self.code)
         
         #recognition of a specific pressed key
-        sg_k_spe = "{N} *== *simplegui.KEY_MAP{S}?\[{Pq}\]"
-        tk_k_spe = '{p} == {k}'
+        sg_k_spe = "simplegui.KEY_MAP{S}?\[{Pq}\]"
+        tk_k_spe = '{k}'
         
-        keys = re.findall(sg_k_spe.format(N=RNI["N"], S=RNI["S"], Pq=RNI["Pq"]), 
-                          self.code)
+        keys = re.findall(sg_k_spe.format(S=RNI["S"], Pq=RNI["Pq"]), self.code)
         
         variables = []
         for k in keys:
-            if k[1][0] in ['"', "'"]:
-                keymap = k[1][1:-1] if len(k[1][1:-1]) == 1 else k[1][1:-1].title()
-                keymap = '"' + keymap + '"'
+            if k[0] in ['"', "'"]:
+                keymap = k if len(k[1:-1]) == 1 else k.title()
             else:
-                keymap = k[1]
-                variables.append(k[1])
-            self.code = re.sub(sg_k_spe.format(N=k[0], S=RNI["S"], Pq=k[1]), 
-                               tk_k_spe.format(p=k[0], k=keymap),
+                keymap = k
+                variables.append(k)
+            self.code = re.sub(sg_k_spe.format(S=RNI["S"], Pq=k), 
+                               tk_k_spe.format(k=keymap),
                                self.code)
         
         # if the key was referenced by a variable, try to find the key back 
