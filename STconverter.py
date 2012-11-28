@@ -45,7 +45,7 @@ RNI = {
     # PARAMETER MULTILINE: digit, variable, list, operation, tuple, multiline
 "Pm" : "([\w\.]+|[\w\.]+\(.*\)|[\w\.]+\[.*\]|[\[\(][\w\+\-\*\/\%\.\[\(\]\)\s,\\\\]+[\]\)])", 
     # PARAMETER QUOTED: variable, list, quoted string
-"Pq" : "((?:[\"].*?[\"]|[\'].*?[\']|[\w\.]+\(.*\)|[\w\.]+\[.*\]|[\w\+\-\*\/\%\.\[\(\]\) ]+)+)", 
+"Pq" : "((?:[\"].*?[\"]|[\'].*?[\']|[\w\.]+\(.*\)|[\w\.]+\[[^,]+\]|[\w\+\-\*\/\%\.\[\(\]\) ]+)+)", 
     # SPACE: comma, space, \n, \
 "S"  : "(?: *(?:,|\\\| )+\s*)", 
     # COMMENT
