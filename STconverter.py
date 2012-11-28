@@ -40,12 +40,14 @@ RNI = {
 "F"  : "([\w\.]+(?:\(.*\))?)", 
     # PARAMETER: digit, variable, list, operation
 "P"  : "([\w\+\-\*\/\%\.\[\(\]\) ]+)", 
-    # PARAMETER COORDINATE: digit, variable, list, operation, tuple
-"Pc" : "([\w\.]+|[\w\.]+\(.*\)|[\w\.]+\[.*\]|[\[\(][^,]+,[^,]+[\]\)])", 
-    # PARAMETER MULTILINE: digit, variable, list, operation, tuple, multiline
-"Pm" : "([\w\.]+|[\w\.]+\(.*\)|[\w\.]+\[.*\]|[\[\(][\w\+\-\*\/\%\.\[\(\]\)\s,\\\\]+[\]\)])", 
-    # PARAMETER QUOTED: variable, list, quoted string
-"Pq" : "((?:[\"].*?[\"]|[\'].*?[\']|[\w\.]+\(.*\)|[\w\.]+\[[^,]+\]|[\w\+\-\*\/\%\.\[\(\]\) ]+)+)", 
+    # PARAMETER COORDINATE: digit, variable, list, function, operation, tuple
+"Pc" : "([\w\.]+|[\w\.]+\(.*\)|[\w\.]+\[[^,]*\]|[\[\(][^,]+,[^,]+[\]\)])", 
+    # PARAMETER MULTILINE: digit, variable, list, function, operation, tuple, multiline
+"Pm" : "([\w\.]+|[\w\.]+\(.*\)|[\w\.]+\[[^,]*\]|[\[\(][\w\+\-\*\/\%\.\[\(\]\)\s,\\\\]+[\]\)])", 
+    # PARAMETER QUOTED: variable, list, function, quoted string
+"Pq" : "([\"].*?[\"]|[\'].*?[\']|[\w\.]+\(.*\)|[\w\.]+\[[^,]+\]|[\w\+\-\*\/\%\.\[\(\]\) ]+)", 
+    # PARAMETER QUOTED TEXT: association of variable, list, quoted string
+"Pt" : "((?:[\"].*?[\"]|[\'].*?[\']|[\w\.]+\(.*\)|[\w\.]+\[[^,]+\]|[\w\+\-\*\/\%\.\[\(\]\) ]+)+)", 
     # SPACE: comma, space, \n, \
 "S"  : "(?: *(?:,|\\\| )+\s*)", 
     # COMMENT
@@ -169,9 +171,9 @@ class Simplegui2Tkinter:
     def up_canvas_text(self):
         """ update the Canvas text item(s) """
         
-        sg_txt = "{C}.draw_text\( *{Pq}{S}{Pc}{S}{P}{S}{Pq} *\)".\
-                 format(C=RNI["C"], Pq=RNI["Pq"], S=RNI["S"], Pc=RNI["Pc"], 
-                        P=RNI["P"])
+        sg_txt = "{C}.draw_text\( *{Pt}{S}{Pc}{S}{P}{S}{Pq} *\)".\
+                 format(C=RNI["C"], Pt=RNI["Pt"], S=RNI["S"], Pc=RNI["Pc"], 
+                        P=RNI["P"], Pq=RNI["Pq"])
         tk_txt = "\\1.create_text(\\3, anchor='sw', " \
                  "text=\\2, font=('DejaVu Serif Condensed', \\4), fill=\\5)"
         self.code = re.sub(sg_txt, tk_txt, self.code)
@@ -296,8 +298,8 @@ class Simplegui2Tkinter:
     def up_button(self):
         """ update Button widget(s) """
         
-        sg_button = "{C}.add_button\( *{Pq}{S}{N}{S}?{P}? *\){M}".\
-                    format(C=RNI["C"], Pq=RNI["Pq"], S=RNI["S"], N=RNI["N"], 
+        sg_button = "{C}.add_button\( *{Pt}{S}{N}{S}?{P}? *\){M}".\
+                    format(C=RNI["C"], Pt=RNI["Pt"], S=RNI["S"], N=RNI["N"], 
                            P=RNI["P"], M=RNI["M"])
         sg_b_ch =   "{I}(?:\w+ *= *)?{f}.add_button\( *{m}{S}{h}{S}?{s} *\){M}"
         tk_b_ws = "\\1{h}_bt = Tkinter.Button({f}, text={m}, command={h})\\2\n" \
@@ -336,8 +338,8 @@ class Simplegui2Tkinter:
     def up_label(self):
         """ update Label widget(s) """
         
-        sg_label =    "{No} *=? *{C}.add_label\( *{Pq}{S}?{P}? *\){M}\n".\
-                      format(No=RNI["No"], C=RNI["C"], Pq=RNI["Pq"], 
+        sg_label =    "{No} *=? *{C}.add_label\( *{Pt}{S}?{P}? *\){M}\n".\
+                      format(No=RNI["No"], C=RNI["C"], Pt=RNI["Pt"], 
                              S=RNI["S"], P=RNI["P"], M=RNI["M"])
         sg_label_nv  = "{I}{n} *=? *{f}.add_label\( *{m}{S}?{s} *\)"
         sg_label_wv  = "{I}{n} *= *{f}.add_label\( *{m}{S}?{s} *\)"
@@ -380,7 +382,7 @@ class Simplegui2Tkinter:
         if "add_input" not in self.code:
             return
         
-        sg_input = "{I}{No} *=? *{C}.add_input\( *{Pq}{S}{N}{S}{P} *\){M}"
+        sg_input = "{I}{No} *=? *{C}.add_input\( *{Pt}{S}{N}{S}{P} *\){M}"
         tk_input = "{i}{n}_lb = Tkinter.Label({f}, text={l})\\1\n" \
                    "{i}{n}_lb.pack()\n" \
                    "{i}{n}_et = Tkinter.Entry({f})\n" \
@@ -392,7 +394,7 @@ class Simplegui2Tkinter:
         param_def   = "(?<=(?<!{i})[= \(\-+*/]){p}(?=[ \)\.\-+*/\n])"
         
         inputs = re.findall(sg_input.format(I=RNI["I"], No=RNI["No"], C=RNI["C"], 
-                                Pq=RNI["Pq"], S=RNI["S"], N=RNI["N"], P=RNI["P"], 
+                                Pt=RNI["Pt"], S=RNI["S"], N=RNI["N"], P=RNI["P"], 
                                 M=RNI["M"]), 
                             self.code)
         
@@ -411,7 +413,7 @@ class Simplegui2Tkinter:
             ## write Tkinter GUI of the Input widget
             tk_input_size = "int(" + i[5] + "/10)"
             self.code = re.sub(sg_input.format(I=i[0], No=i[1], C=i[2], 
-                                   Pq=re.escape(i[3]), S=RNI["S"], N=i[4], 
+                                   Pt=re.escape(i[3]), S=RNI["S"], N=i[4], 
                                    P=re.escape(i[5]), M=RNI["M"]), 
                                tk_input.format(i=i[0], n=i[4], f=i[2], l=i[3], 
                                    s=tk_input_size), 
@@ -493,8 +495,8 @@ class Simplegui2Tkinter:
         # update the longest music/sound to use the pygame music module
         
         # find all musics/sounds
-        m_all = re.findall("{No} *=? *simplegui.load_sound\( *{Pq} *\)".\
-                               format(No=RNI["No"], Pq=RNI["Pq"]), 
+        m_all = re.findall("{No} *=? *simplegui.load_sound\( *{Pt} *\)".\
+                               format(No=RNI["No"], Pt=RNI["Pt"]), 
                            self.code)
         
         # verify or find source path of each music/sound
@@ -612,7 +614,7 @@ class Simplegui2Tkinter:
         
         
         # update all images loading
-        self.code = re.sub("simplegui.load_image\( *{Pq} *\)".format(Pq=RNI["Pq"]), 
+        self.code = re.sub("simplegui.load_image\( *{Pt} *\)".format(Pt=RNI["Pt"]), 
                            "STconverter_image(Image.open(urllib.urlretrieve(\\1)[0]))", 
                            self.code)
         
@@ -710,12 +712,13 @@ class Simplegui2Tkinter:
         for v in variables:
             v = v.split(".")[-1]
             key = re.findall("{v} *= *[\"\']{N}[\"\']".format(v=v, N=RNI["N"]), 
-                               self.code)[0]
-            keymap = key if len(key) == 1 else key.title()
-            keymap = '"space"' if keymap in ["'Space'", '"Space"'] else keymap
-            self.code = re.sub("{v} *= *[\"\']{k}[\"\']".format(v=v, k=key), 
-                               "{v} = '{k}'".format(v=v, k=keymap), 
                                self.code)
+            if key:
+                keymap = key[0] if len(key[0]) == 1 else key[0].title()
+                keymap = '"space"' if keymap in ["'Space'", '"Space"'] else keymap
+                self.code = re.sub("{v} *= *[\"\']{k}[\"\']".format(v=v, k=key[0]), 
+                                   "{v} = '{k}'".format(v=v, k=keymap), 
+                                   self.code)
     
     
     def up_mouse(self):
