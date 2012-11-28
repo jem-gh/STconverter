@@ -171,14 +171,25 @@ class Simplegui2Tkinter:
     def up_canvas_text(self):
         """ update the Canvas text item(s) """
         
-        sg_txt = "{I}{C}.draw_text\( *{Pt}{S}{Pc}{S}{P}{S}{Pq} *\)".\
-                 format(I=RNI["I"], C=RNI["C"], Pt=RNI["Pt"], S=RNI["S"], 
-                        Pc=RNI["Pc"], P=RNI["P"], Pq=RNI["Pq"])
-        tk_txt = "\\1x, y = \\4\n" \
-                 "\\1y += \\5 / 3\n" \
-                 "\\1\\2.create_text([x, y], anchor='sw', " \
-                     "text=\\3, font=('DejaVu Serif Condensed', \\5), fill=\\6)"
-        self.code = re.sub(sg_txt, tk_txt, self.code)
+        sg_txt = "{I}{No} *=? *{C}.draw_text\( *{Pt}{S}{Pc}{S}{P}{S}{Pq} *\)"
+        tk_txt = "{i}ST_oval_x, ST_oval_y = {pc}\n" \
+                 "{i}ST_oval_y += {p} / 3\n" \
+                 "{i}{n}{c}.create_text([ST_oval_x, ST_oval_y], anchor='sw', " \
+                     "text={pt}, font=('DejaVu Serif Condensed', {p}), fill={pq})"
+        
+        texts = re.findall(sg_txt.format(I=RNI["I"], No=RNI["No"], C=RNI["C"], 
+                               Pt=RNI["Pt"], S=RNI["S"], Pc=RNI["Pc"], P=RNI["P"], 
+                               Pq=RNI["Pq"]), 
+                           self.code)
+        
+        for t in texts:
+            name = t[1] + " = " if t[1] else ""
+            self.code = re.sub(sg_txt.format(I=t[0], No=t[1], C=t[2], 
+                                   Pt=re.escape(t[3]), S=RNI["S"], Pc=re.escape(t[4]), 
+                                   P=re.escape(t[5]), Pq=re.escape(t[6])), 
+                               tk_txt.format(i=t[0], pc=t[4], p=t[5], n=name,
+                                   c=t[2], pt=t[3], pq=t[6]), 
+                               self.code)
     
     
     def up_canvas_oval(self):
