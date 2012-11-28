@@ -171,11 +171,13 @@ class Simplegui2Tkinter:
     def up_canvas_text(self):
         """ update the Canvas text item(s) """
         
-        sg_txt = "{C}.draw_text\( *{Pt}{S}{Pc}{S}{P}{S}{Pq} *\)".\
-                 format(C=RNI["C"], Pt=RNI["Pt"], S=RNI["S"], Pc=RNI["Pc"], 
-                        P=RNI["P"], Pq=RNI["Pq"])
-        tk_txt = "\\1.create_text(\\3, anchor='sw', " \
-                 "text=\\2, font=('DejaVu Serif Condensed', \\4), fill=\\5)"
+        sg_txt = "{I}{C}.draw_text\( *{Pt}{S}{Pc}{S}{P}{S}{Pq} *\)".\
+                 format(I=RNI["I"], C=RNI["C"], Pt=RNI["Pt"], S=RNI["S"], 
+                        Pc=RNI["Pc"], P=RNI["P"], Pq=RNI["Pq"])
+        tk_txt = "\\1x, y = \\4\n" \
+                 "\\1y += \\5 / 3\n" \
+                 "\\1\\2.create_text([x, y], anchor='sw', " \
+                     "text=\\3, font=('DejaVu Serif Condensed', \\5), fill=\\6)"
         self.code = re.sub(sg_txt, tk_txt, self.code)
     
     
