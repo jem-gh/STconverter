@@ -717,7 +717,7 @@ class Simplegui2Tkinter:
             else:
                 keymap = k
                 variables.append(k)
-            self.code = re.sub(sg_k_spe.format(S=RNI["S"], Pq=k), 
+            self.code = re.sub(sg_k_spe.format(S=RNI["S"], Pq=re.escape(k)), 
                                tk_k_spe.format(k=keymap),
                                self.code)
         
