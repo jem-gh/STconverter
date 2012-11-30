@@ -402,9 +402,9 @@ class Simplegui2Tkinter:
                    "{i}{n}_et.bind('<Return>', {n})\n" \
                    "{i}{n}_et.config(width={s})\n" \
                    "{i}{n}_et.pack()\n"
-        sg_inp_fn_p = "def {n}\( *{N} *\):"
-        sg_inp_fn   = "def {n}\( *{p} *\): *(?:\n .*)+[=( \-+*/]{p}[) \-+*/\n]"
-        param_def   = "(?<=(?<!{i})[= \(\-+*/]){p}(?=[ \)\.\-+*/\n])"
+        sg_inp_eh = "{I}def {n}\( *{N} *\):"
+        tk_inp_eh = "\\1def {n}(\\2):\n" \
+                    "\\1    \\2 = {n}_et.get()"
         
         inputs = re.findall(sg_input.format(I=RNI["I"], No=RNI["No"], C=RNI["C"], 
                                 Pt=RNI["Pt"], S=RNI["S"], N=RNI["N"], P=RNI["P"], 
@@ -412,16 +412,10 @@ class Simplegui2Tkinter:
                             self.code)
         
         for i in inputs:
-            # retrieve parameter name used in the Input handler
-            p = re.findall(sg_inp_fn_p.format(n=i[4], N=RNI["N"]), self.code)[0]
-            
-            # find and update parameter in the Input handler
-            handler_old = re.findall(sg_inp_fn.format(n=i[4], p=p), 
-                                     self.code)[0]
-            handler_new = re.sub(param_def.format(i=i[4], p=p), 
-                                 "{}_et.get()".format(i[4]), 
-                                 handler_old)
-            self.code = self.code.replace(handler_old, handler_new)
+            # update Input handler
+            self.code = re.sub(sg_inp_eh.format(I=RNI["I"], n=i[4], N=RNI["N"]), 
+                               tk_inp_eh.format(n=i[4]), 
+                               self.code)
             
             ## write Tkinter GUI of the Input widget
             tk_input_size = "int(" + i[5] + "/10)"
