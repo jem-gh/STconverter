@@ -5,8 +5,9 @@
 ###############################################################################
 
 ###############################################################################
-# SimpleGUI/Tkinter Converter (STconverter) is a little software aiming to 
-# convert Python scripts written for SimpleGUI to work with Tkinter GUI instead.
+# SimpleGUI/Tkinter Converter (STconverter) is a little software which will 
+# convert Python scripts written for the online SimpleGUI interface to work 
+# instead with Tkinter on your computer. 
 # 
 # "Tkinter is Python's de-facto standard GUI (Graphical User Interface) package"
 # (http://wiki.python.org/moin/TkInter)
@@ -16,24 +17,35 @@
 # online Coursera course "An Introduction to Interactive Programming in Python" 
 # by Joe Warren, Scott Rixner, John Greiner, and Stephen Wong (Rice University) 
 # 
-# For the latest version of STConverter visit the repository on Github: 
+# Online version: 
+# Stconverter Online is the webapp version of STconverter and can be find at 
+# stconverter-online.appspot.com
+# 
+# For the latest version of STconverter, you can visit the repository on Github: 
 # https://github.com/jem-gh/STconverter
 # 
-# STconverter is developed by Jean-Etienne Morlighem
+#   STconverter is developed by Jean-Etienne Morlighem <jem.nvnt@gmail.com>
 ###############################################################################
 
 
 
-1. REQUIREMENTS
+1. LICENSE
+STconverter is under the MIT License
+Copyright (c) 2012 Jean-Etienne Morlighem <jem.nvnt@gmail.com>
+https://github.com/jem-gh/STconverter
 
-1.1. To run STconverter
+
+
+2. REQUIREMENTS
+
+2.1. To run STconverter
 
 - Python & Tkinter: STconverter will need Python installed on your machine with 
 the Tkinter module (generally installed by default with Python) to run correctly.
 http://www.python.org/download/
 
 
-1.2. To run your program (after conversion) on your machine
+2.2. To run your program (after conversion) on your machine
 
 A simple rule of thumb is:
 				Additional module(s)	Works with Python
@@ -55,14 +67,14 @@ http://www.pythonware.com/products/pil/index.htm
 
 
 
-2. STconverter INSTALLATION
+3. INSTALLATION
 
 No installation of STconversion required. Just download the STconverter.py file, 
 and it's ready to use.
 
 
 
-3. HOW TO USE
+4. HOW TO USE
 
 On linux, you can start the program by typing in terminal:
 
@@ -76,15 +88,16 @@ The GUI will then start.
 
 
 
-4. MAJOR KNOWN ISSUES
+5. MAJOR KNOWN ISSUES
 
-- Global Variables: SimpleGUI handles very well global variables which were 
-assigned "locally" in a function. This is generally not the case of your 
-Python interpreter. 
+> Global Variables:
+SimpleGUI handles very well global variables which were assigned "locally" 
+in a function. This is generally not the case of your Python interpreter. 
 
-- Multiline Expressions: although STconverter can handle multiline SimpleGUI 
-expressions (as for example a canvas.draw_polyline() written in multiline), 
-sometimes it can cause problems during the conversion. 
+> Multiline Expressions: 
+although STconverter can handle multiline SimpleGUI expressions (as for 
+example a canvas.draw_polyline() written in multiline), sometimes it can 
+cause problems during the conversion. 
 If it is the case, try to write the parameters in variables before:
 	canvas.draw_polyline([(CANVAS_SIZE[0] // 3, CANVAS_SIZE[1] // 3), 
         	              (POINT_POS[0] * 2, POINT_POS[1] * 2), 
@@ -96,13 +109,34 @@ will become:
           	  (POINT_POS[0] * 3, POINT_POS[1] * 3)]
 	canvas.draw_polyline(points, 12, "Blue")
 
-- Comments: Comments written inside multiline SimpleGUI expressions are not 
-supported yet. (however, comments written at the end of such expressions is 
-not an issue)
+> Comments: 
+Comments written inside multiline SimpleGUI expressions are not supported yet. 
+(however, comments written at the end of such expressions is not an issue)
+
+> Canvas background color: 
+the color of the canvas background cannot be changed once the program started.
+
+> Divisions and Canvas texts: 
+Division on Python 2.7 returns the floor of the quotient, whereas on Python 3 
+and SimpleGUI it returns the true division result. In order to make divisions 
+behave like in SimpleGUI, the converted file by default includes a "from 
+__future__ import division" statement. 
+As a result, text messages printed on Canvas containing division results will 
+show float numbers which could disrupt the formating. In this case, if true 
+division is not needed, you could remove the division statement from the 
+converted file, or if true division is needed, you could print the integer of 
+the division result. 
 
 
 
-5. TESTED ON...
+6. TESTED ON...
 
 So far, it has been tested on:
 - Linux with Python 2.7.3, pygame 1.9.1, and PIL 1.1.7
+
+
+
+7. ONLINE VERSION
+
+Stconverter Online is the webapp version of STconverter and can be find at 
+	stconverter-online.appspot.com
