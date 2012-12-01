@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# MIT License
+# Copyright (c) 2012 Jean-Etienne Morlighem <jem.nvnt@gmail.com>
+# https://github.com/jem-gh/STconverter
 
 ###############################################################################
 # SimpleGUI/Tkinter Converter (STconverter) is a little software aiming to 
