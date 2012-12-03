@@ -359,9 +359,9 @@ class Simplegui2Tkinter:
                              S=RNI["S"], P=RNI["P"], M=RNI["M"])
         sg_label_nv  = "{I}{n} *=? *{f}.add_label\( *{m}{S}?{s} *\)"
         sg_label_wv  = "{I}{n} *= *{f}.add_label\( *{m}{S}?{s} *\)"
-        tk_label_nv = "\\1Tkinter.Label({f}, text={m}).pack()"
+        tk_label_nv = "\\1Tkinter.Label({f}, text={m}, wraplength=200).pack()"
         tk_label_wv = "\\1{n}_var = Tkinter.StringVar()\n" \
-                      "\\1{n} = Tkinter.Label({f}, textvariable={n}_var).pack()\n" \
+                      "\\1{n} = Tkinter.Label({f}, textvariable={n}_var, wraplength=200).pack()\n" \
                       "\\1{n}_var.set({m})"
         
         # find all labels in order to differentiate the ones using text variable
@@ -399,7 +399,7 @@ class Simplegui2Tkinter:
             return
         
         sg_input = "{I}{No} *=? *{C}.add_input\( *{Pt}{S}{N}{S}{P} *\){M}"
-        tk_input = "{i}{n}_lb = Tkinter.Label({f}, text={l})\\1\n" \
+        tk_input = "{i}{n}_lb = Tkinter.Label({f}, text={l}, wraplength=200)\\1\n" \
                    "{i}{n}_lb.pack()\n" \
                    "{i}{n}_et = Tkinter.Entry({f})\n" \
                    "{i}{n}_et.bind('<Return>', {n})\n" \
